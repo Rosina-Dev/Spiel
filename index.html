@@ -1,0 +1,964 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lieblingsbrüderleins Küchenchaos</title>
+  <meta name="description" content="Ein kleines Geburtstags-Kochspiel für Lieblingsbrüderlein.">
+  <meta property="og:title" content="Lieblingsbrüderleins Küchenchaos">
+  <meta property="og:description" content="Ein kleines Geburtstags-Kochspiel für Lieblingsbrüderlein.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://rosina-dev.github.io/Spiel/">
+  <meta property="og:image" content="https://rosina-dev.github.io/Spiel/whatsapp-vorschau.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #231f20;
+      --muted: #695f58;
+      --paper: #fffaf1;
+      --paper-strong: #ffe8b7;
+      --tile: #ffffff;
+      --line: #e4be82;
+      --tomato: #e34f3f;
+      --basil: #2f8f5b;
+      --olive: #91a942;
+      --aubergine: #63456f;
+      --cream: #fffaf0;
+      --shadow: 0 16px 38px rgba(52, 36, 18, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 14% 18%, rgba(201, 73, 54, 0.12), transparent 26%),
+        radial-gradient(circle at 87% 10%, rgba(47, 122, 76, 0.13), transparent 24%),
+        linear-gradient(135deg, #fff9e8 0%, #ffe1a8 42%, #dff4dc 100%);
+      letter-spacing: 0;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    .app {
+      width: min(980px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      place-items: center;
+    }
+
+    .screen {
+      width: 100%;
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .hero,
+    .game-shell,
+    .finale {
+      width: min(780px, 100%);
+      margin: 0 auto;
+      border: 1px solid rgba(86, 63, 94, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 252, 243, 0.96);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-art {
+      min-height: 250px;
+      display: grid;
+      place-items: center;
+      padding: 32px 18px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 22% 26%, rgba(255, 255, 255, 0.92) 0 7px, transparent 8px),
+        radial-gradient(circle at 78% 32%, rgba(255, 255, 255, 0.78) 0 6px, transparent 7px),
+        linear-gradient(120deg, rgba(47, 143, 91, 0.26), transparent 34%, rgba(227, 79, 63, 0.22)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.36) 0 22px, rgba(255, 255, 255, 0.12) 22px 44px);
+    }
+
+    .hero-art::before,
+    .hero-art::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .hero-art::before {
+      background:
+        radial-gradient(circle, #e34f3f 0 3px, transparent 4px) 12% 18% / 52px 52px,
+        radial-gradient(circle, #2f8f5b 0 3px, transparent 4px) 82% 22% / 58px 58px,
+        radial-gradient(circle, #f7b733 0 3px, transparent 4px) 58% 14% / 50px 50px;
+      opacity: 0.95;
+    }
+
+    .hero-art::after {
+      background: linear-gradient(180deg, transparent, rgba(255, 248, 232, 0.22));
+    }
+
+    .balloons {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .balloon {
+      position: absolute;
+      width: 52px;
+      height: 66px;
+      border-radius: 52% 52% 48% 48%;
+      box-shadow: inset -10px -12px 0 rgba(35, 31, 32, 0.12), 0 10px 18px rgba(52, 36, 18, 0.12);
+    }
+
+    .balloon::before {
+      content: "";
+      position: absolute;
+      left: 14px;
+      top: 12px;
+      width: 12px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.56);
+    }
+
+    .balloon::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 98%;
+      width: 1px;
+      height: 74px;
+      background: rgba(86, 63, 94, 0.34);
+    }
+
+    .balloon.red {
+      left: 8%;
+      top: 18px;
+      background: #e34f3f;
+      transform: rotate(-7deg);
+    }
+
+    .balloon.green {
+      right: 8%;
+      top: 34px;
+      background: #2f8f5b;
+      transform: rotate(8deg);
+    }
+
+    .balloon.gold {
+      right: 22%;
+      top: 16px;
+      width: 42px;
+      height: 54px;
+      background: #f7b733;
+      transform: rotate(-4deg);
+    }
+
+    .kitchen-board {
+      width: min(360px, 92vw);
+      aspect-ratio: 1.45;
+      position: relative;
+      z-index: 2;
+      border-radius: 8px;
+      background: linear-gradient(160deg, #f7b733 0%, #2f8f5b 52%, #e34f3f 100%);
+      box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.26), 0 18px 34px rgba(35, 31, 32, 0.24);
+    }
+
+    .pan {
+      position: absolute;
+      left: 12%;
+      bottom: 18%;
+      width: 46%;
+      height: 28%;
+      border-radius: 50%;
+      background: #252525;
+      box-shadow: inset 0 -10px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .pan::after {
+      content: "";
+      position: absolute;
+      right: -34%;
+      top: 40%;
+      width: 44%;
+      height: 18%;
+      border-radius: 999px;
+      background: #252525;
+      transform: rotate(-12deg);
+    }
+
+    .steam {
+      position: absolute;
+      width: 12%;
+      height: 34%;
+      border-radius: 50%;
+      border-left: 5px solid rgba(255, 255, 255, 0.68);
+      transform: rotate(12deg);
+    }
+
+    .steam.one {
+      left: 22%;
+      top: 18%;
+    }
+
+    .steam.two {
+      left: 36%;
+      top: 11%;
+    }
+
+    .steam.three {
+      left: 49%;
+      top: 18%;
+    }
+
+    .tomato {
+      position: absolute;
+      right: 14%;
+      top: 18%;
+      width: 21%;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: var(--tomato);
+      box-shadow: inset -8px -10px 0 rgba(109, 30, 22, 0.18);
+    }
+
+    .tomato::before {
+      content: "";
+      position: absolute;
+      left: 31%;
+      top: -11%;
+      width: 34%;
+      height: 28%;
+      background: var(--basil);
+      clip-path: polygon(50% 0, 63% 38%, 100% 36%, 70% 58%, 83% 100%, 50% 72%, 17% 100%, 30% 58%, 0 36%, 37% 38%);
+    }
+
+    .hero-copy,
+    .finale-copy {
+      position: relative;
+      z-index: 2;
+      padding: 26px;
+      text-align: center;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      line-height: 1.05;
+    }
+
+    h1 {
+      font-size: clamp(2.2rem, 9vw, 4.8rem);
+      max-width: 760px;
+      margin-inline: auto;
+    }
+
+    h2 {
+      font-size: clamp(1.75rem, 7vw, 3.3rem);
+    }
+
+    p {
+      margin: 12px auto 0;
+      max-width: 620px;
+      color: var(--muted);
+      font-size: clamp(1rem, 3.5vw, 1.15rem);
+      line-height: 1.55;
+    }
+    .instructions {
+      max-width: 660px;
+      margin: 18px auto 0;
+      display: grid;
+      gap: 8px;
+      text-align: left;
+    }
+
+    .instructions div {
+      padding: 10px 12px;
+      border: 1px solid rgba(86, 63, 94, 0.14);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.64);
+      color: var(--ink);
+      font-size: clamp(0.94rem, 3.2vw, 1.04rem);
+      line-height: 1.35;
+    }
+
+    .primary-button,
+    .secondary-button,
+    .dish-button {
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    .primary-button {
+      margin-top: 22px;
+      padding: 15px 22px;
+      min-height: 52px;
+      background: var(--tomato);
+      color: #fff;
+      font-weight: 800;
+      box-shadow: 0 12px 22px rgba(201, 73, 54, 0.25);
+    }
+
+    .secondary-button {
+      padding: 12px 16px;
+      min-height: 46px;
+      background: #f0ddba;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .primary-button:hover,
+    .secondary-button:hover,
+    .dish-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-button:active,
+    .secondary-button:active,
+    .dish-button:active {
+      transform: translateY(1px);
+    }
+
+    .game-header {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+      background: linear-gradient(90deg, rgba(255, 241, 212, 0.88), rgba(255, 255, 255, 0.78));
+      border-bottom: 1px solid var(--line);
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .level-label {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 7px 11px;
+      border-radius: 8px;
+      color: #fff;
+      background: var(--aubergine);
+      font-weight: 800;
+      font-size: 0.94rem;
+    }
+
+    .score {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.94rem;
+    }
+
+    .prompt {
+      min-height: 58px;
+      margin: 0;
+      max-width: none;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .progress {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(105, 95, 88, 0.15);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--basil), var(--olive));
+      transition: width 220ms ease;
+    }
+
+    .game-body {
+      padding: 18px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .tickets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+      gap: 12px;
+    }
+
+    .ticket {
+      min-height: 106px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(#fffef9 0 0) padding-box,
+        repeating-linear-gradient(0deg, #f6ddb6 0 10px, #f4d4a3 10px 20px) border-box;
+      box-shadow: 0 8px 18px rgba(52, 36, 18, 0.08);
+    }
+
+    .ticket small {
+      display: block;
+      color: var(--muted);
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+
+    .ticket strong {
+      display: block;
+      font-size: clamp(1rem, 4vw, 1.2rem);
+      line-height: 1.22;
+    }
+
+    .ticket.hidden-order strong {
+      color: transparent;
+      text-shadow: 0 0 11px rgba(35, 31, 32, 0.46);
+      user-select: none;
+    }
+
+    .ticket.served {
+      background: #f4ffe9;
+      border-color: rgba(47, 122, 76, 0.32);
+    }
+
+    .ticket.current {
+      border-color: var(--tomato);
+      box-shadow: 0 0 0 3px rgba(201, 73, 54, 0.15), 0 8px 18px rgba(52, 36, 18, 0.08);
+    }
+
+    .dish-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+      gap: 8px;
+    }
+
+    .dish-button {
+      min-height: 58px;
+      padding: 9px 8px;
+      display: grid;
+      place-items: center;
+      gap: 3px;
+      color: var(--ink);
+      background: var(--tile);
+      border: 1px solid rgba(86, 63, 94, 0.16);
+      box-shadow: 0 8px 17px rgba(52, 36, 18, 0.08);
+      font-weight: 800;
+      text-align: center;
+      line-height: 1.16;
+      font-size: clamp(0.74rem, 2.7vw, 0.92rem);
+      overflow-wrap: anywhere;
+      hyphens: auto;
+    }
+
+
+    .dish-button.bad {
+      background: #fff0ed;
+    }
+
+    .dish-button.good {
+      background: #f6fff2;
+    }
+
+    .dish-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+      transform: none;
+    }
+
+    .feedback {
+      min-height: 52px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: var(--paper-strong);
+      color: var(--ink);
+      font-weight: 800;
+      line-height: 1.35;
+    }
+
+    .feedback.good {
+      background: #e9f8df;
+      color: #255d39;
+    }
+
+    .feedback.bad {
+      background: #ffe4de;
+      color: #8f2c20;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .finale {
+      position: relative;
+      text-align: center;
+    }
+
+    .finale-balloons {
+      opacity: 0.72;
+    }
+
+    .finale-balloons .red {
+      left: 7%;
+      top: 26px;
+    }
+
+    .finale-balloons .green {
+      right: 7%;
+      top: 52px;
+    }
+
+    .finale-balloons .gold {
+      right: 18%;
+      top: 20px;
+    }
+
+    .plate {
+      position: relative;
+      z-index: 2;
+      width: min(280px, 70vw);
+      aspect-ratio: 1;
+      margin: 26px auto 0;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle, #fffdf7 0 46%, #f0dfc4 47% 61%, #fffaf0 62% 100%);
+      border: 1px solid rgba(86, 63, 94, 0.14);
+      box-shadow: inset 0 0 0 12px rgba(255, 255, 255, 0.7), var(--shadow);
+    }
+
+    .plate span {
+      display: block;
+      width: 68%;
+      padding: 18px 12px;
+      border-radius: 8px;
+      background: var(--tomato);
+      color: #fff;
+      font-size: clamp(1.5rem, 7vw, 2.5rem);
+      font-weight: 900;
+      transform: rotate(-5deg);
+    }
+
+    .final-message {
+      color: var(--ink);
+      font-size: clamp(1.08rem, 4.5vw, 1.32rem);
+      font-weight: 750;
+    }
+
+    @media (max-width: 540px) {
+      .app {
+        padding: 10px;
+        align-items: start;
+      }
+
+      .hero-copy,
+      .finale-copy,
+      .game-header,
+      .game-body {
+        padding: 15px;
+      }
+
+      .hero-art {
+        min-height: 220px;
+      }
+
+      .balloon {
+        width: 38px;
+        height: 49px;
+      }
+
+      .balloon.gold {
+        width: 32px;
+        height: 42px;
+      }
+
+      .prompt {
+        min-height: 76px;
+      }
+
+      .dish-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .dish-button {
+        min-height: 62px;
+        font-size: 0.78rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section id="start-screen" class="screen active" aria-labelledby="start-title">
+      <div class="hero">
+        <div class="hero-art" aria-hidden="true">
+          <div class="balloons"><span class="balloon red"></span><span class="balloon green"></span><span class="balloon gold"></span></div>
+          <div class="kitchen-board">
+            <div class="steam one"></div>
+            <div class="steam two"></div>
+            <div class="steam three"></div>
+            <div class="pan"></div>
+            <div class="tomato"></div>
+          </div>
+        </div>
+        <div class="hero-copy">
+          <h1 id="start-title">Lieblingsbrüderleins Küchenchaos</h1>
+          <p>Happy Birthday, Lieblingsbrüderlein. Erst kommt die Anleitung, dann startet der Service.</p>
+          <div class="instructions" aria-label="Spielanleitung">
+            <div><strong>1.</strong> Merke dir die Bestellzettel in der richtigen Reihenfolge.</div>
+            <div><strong>2.</strong> Drücke erst dann auf „Service starten“, wenn du bereit bist.</div>
+            <div><strong>3.</strong> Wähle aus 8 gemischten Feldern die richtigen Gerichte. Die Küchenfallen sehen absichtlich harmlos aus.</div>
+          </div>
+          <button id="start-button" class="primary-button" type="button">Anleitung verstanden</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="game-screen" class="screen" aria-labelledby="level-title">
+      <div class="game-shell">
+        <header class="game-header">
+          <div class="status-row">
+            <div id="level-title" class="level-label">Level 1</div>
+            <div class="score" aria-live="polite">
+              <span id="round-count">Runde 1/2</span>
+              <span id="mistake-count">Küchenpannen: 0/3</span>
+            </div>
+          </div>
+          <p id="prompt" class="prompt">Die Bestellzettel kommen gleich.</p>
+          <div class="progress" aria-hidden="true">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+        </header>
+
+        <div class="game-body">
+          <div id="tickets" class="tickets" aria-label="Bestellungen"></div>
+          <div id="dish-grid" class="dish-grid" aria-label="Gerichte"></div>
+          <div id="feedback" class="feedback" role="status" aria-live="polite">Bereit für den Herd.</div>
+          <div class="controls">
+            <button id="show-orders-button" class="secondary-button" type="button">Bestellungen kurz ansehen</button>
+            <button id="restart-button" class="secondary-button" type="button">Neu starten</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="final-screen" class="screen" aria-labelledby="final-title">
+      <div class="finale">
+        <div class="plate" aria-hidden="true"><span>Bravo!</span></div>
+        <div class="balloons finale-balloons"><span class="balloon red"></span><span class="balloon green"></span><span class="balloon gold"></span></div>
+        <div class="finale-copy">
+          <h2 id="final-title">Küchenchaos gemeistert</h2>
+          <p class="final-message">Alles Gute zum Geburtstag, Lieblingsbrüderlein. Möge deine Pasta immer al dente, deine Tomaten immer voller Geschmack und deine Mayo niemals gekauft sein. Hoch die Gabeln!</p>
+          <p>Du hast die Küche mit Stil, Gedächtnis und einer klaren Haltung gegen traurige Zutaten gerettet.</p>
+          <button id="play-again-button" class="primary-button" type="button">Nochmal kochen</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const goodDishes = [
+      { name: "Lasagne" },
+      { name: "Sazzizz" },
+      { name: "Focaccia" },
+      { name: "MuttiMutti's Rahmwähe" },
+      { name: "Nudeln mit MorchelRahmsauce" }
+    ];
+
+    const badDishes = [
+      { name: "Verkochte Pasta", roast: "Verkochte Pasta? Lieblingsbrüderlein hat kurz innerlich die Küche verlassen." },
+      { name: "Geschmacklose Tomaten", roast: "Diese Tomaten schmecken nach Fensterbank im Februar. Nochmal!" },
+      { name: "Gekaufte Mayo", roast: "Gekaufte Mayo? Das war mutig. Sehr mutig." }
+    ];
+
+    const levels = [
+      {
+        name: "Level 1: Mise en place",
+        rounds: [
+          ["Lasagne", "Focaccia"],
+          ["Sazzizz", "MuttiMutti's Rahmwähe", "Lasagne"]
+        ],
+        previewSeconds: 5,
+        includeBad: false
+      },
+      {
+        name: "Level 2: Service am Samstagabend",
+        rounds: [
+          ["Focaccia", "Nudeln mit MorchelRahmsauce", "Sazzizz", "Lasagne"],
+          ["MuttiMutti's Rahmwähe", "Lasagne", "Focaccia", "Nudeln mit MorchelRahmsauce", "Sazzizz"]
+        ],
+        previewSeconds: 6,
+        includeBad: true
+      }
+    ];
+
+    const screens = {
+      start: document.querySelector("#start-screen"),
+      game: document.querySelector("#game-screen"),
+      final: document.querySelector("#final-screen")
+    };
+
+    const startButton = document.querySelector("#start-button");
+    const playAgainButton = document.querySelector("#play-again-button");
+    const restartButton = document.querySelector("#restart-button");
+    const showOrdersButton = document.querySelector("#show-orders-button");
+    const levelTitle = document.querySelector("#level-title");
+    const roundCount = document.querySelector("#round-count");
+    const mistakeCount = document.querySelector("#mistake-count");
+    const prompt = document.querySelector("#prompt");
+    const progressFill = document.querySelector("#progress-fill");
+    const tickets = document.querySelector("#tickets");
+    const dishGrid = document.querySelector("#dish-grid");
+    const feedback = document.querySelector("#feedback");
+
+    let state = {};
+    let previewTimer = null;
+
+    function resetState() {
+      state = {
+        levelIndex: 0,
+        roundIndex: 0,
+        currentTargetIndex: 0,
+        mistakes: 0,
+        showingOrders: true,
+        locked: false
+      };
+    }
+
+    function showScreen(name) {
+      Object.values(screens).forEach((screen) => screen.classList.remove("active"));
+      screens[name].classList.add("active");
+    }
+
+    function startGame() {
+      resetState();
+      showScreen("game");
+      startRound();
+    }
+
+    function getCurrentLevel() {
+      return levels[state.levelIndex];
+    }
+
+    function getCurrentOrders() {
+      return getCurrentLevel().rounds[state.roundIndex];
+    }
+
+    function startRound() {
+      clearTimeout(previewTimer);
+      state.currentTargetIndex = 0;
+      state.showingOrders = true;
+      state.locked = true;
+      state.currentOptions = shuffleDishes([...goodDishes, ...badDishes]);
+      updateView();
+      feedback.className = "feedback";
+      feedback.textContent = "Merke dir die Bestellzettel in Ruhe. Wenn du bereit bist: Service starten.";
+      prompt.textContent = "Erst schauen, dann kochen: Wer wollte welches Lieblingsgericht?";
+    }
+
+    function hideOrders() {
+      clearTimeout(previewTimer);
+      state.showingOrders = false;
+      state.locked = false;
+      updateView();
+      prompt.textContent = `Serviere jetzt Teller ${state.currentTargetIndex + 1}. Die Zettel bleiben verdeckt.`;
+      feedback.className = "feedback";
+      feedback.textContent = "Jetzt zählt das Küchen-Gedächtnis.";
+    }
+
+    function brieflyShowOrders() {
+      if (state.showingOrders) {
+        hideOrders();
+        return;
+      }
+      if (state.locked) {
+        return;
+      }
+      state.showingOrders = true;
+      state.locked = true;
+      updateView();
+      feedback.className = "feedback";
+      feedback.textContent = "Kurzer Blick auf die Bestellungen. Danach wieder aus dem Kopf.";
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(hideOrders, 2200);
+    }
+
+    function updateView() {
+      const level = getCurrentLevel();
+      const orders = getCurrentOrders();
+      const totalRounds = levels.reduce((sum, item) => sum + item.rounds.length, 0);
+      const completedRounds = levels.slice(0, state.levelIndex).reduce((sum, item) => sum + item.rounds.length, 0) + state.roundIndex;
+      const completedOrders = orders.filter((_, index) => index < state.currentTargetIndex).length;
+      const allOrders = levels.reduce((sum, item) => sum + item.rounds.reduce((inner, round) => inner + round.length, 0), 0);
+      const doneOrders = levels.slice(0, state.levelIndex).reduce((sum, item) => sum + item.rounds.reduce((inner, round) => inner + round.length, 0), 0)
+        + level.rounds.slice(0, state.roundIndex).reduce((sum, round) => sum + round.length, 0)
+        + completedOrders;
+
+      levelTitle.textContent = level.name;
+      roundCount.textContent = `Runde ${completedRounds + 1}/${totalRounds}`;
+      mistakeCount.textContent = `Küchenpannen: ${state.mistakes}/3`;
+      progressFill.style.width = `${Math.round((doneOrders / allOrders) * 100)}%`;
+
+      tickets.innerHTML = "";
+      orders.forEach((order, index) => {
+        const ticket = document.createElement("article");
+        ticket.className = "ticket";
+        if (!state.showingOrders) {
+          ticket.classList.add("hidden-order");
+        }
+        if (index < state.currentTargetIndex) {
+          ticket.classList.add("served");
+        }
+        if (!state.showingOrders && index === state.currentTargetIndex) {
+          ticket.classList.add("current");
+        }
+        ticket.innerHTML = `<small>Teller ${index + 1}</small><strong>${order}</strong>`;
+        tickets.append(ticket);
+      });
+
+      renderDishButtons(level);
+      showOrdersButton.disabled = state.locked && !state.showingOrders;
+      showOrdersButton.textContent = state.showingOrders ? "Service starten" : "Bestellungen kurz ansehen";
+    }
+
+
+    function shuffleDishes(dishes) {
+      const shuffled = [...dishes];
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const swapIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+      }
+      return shuffled;
+    }
+    function renderDishButtons(level) {
+      const options = state.currentOptions.length ? state.currentOptions : shuffleDishes([...goodDishes, ...badDishes]);
+      dishGrid.innerHTML = "";
+      options.forEach((dish) => {
+        const button = document.createElement("button");
+        const isBad = badDishes.some((bad) => bad.name === dish.name);
+        button.className = `dish-button ${isBad ? "bad" : "good"}`;
+        button.type = "button";
+        button.disabled = state.locked || state.showingOrders;
+        button.textContent = dish.name;
+        button.addEventListener("click", () => chooseDish(dish.name));
+        dishGrid.append(button);
+      });
+    }
+
+    function chooseDish(choice) {
+      if (state.locked || state.showingOrders) {
+        return;
+      }
+
+      const orders = getCurrentOrders();
+      const target = orders[state.currentTargetIndex];
+      const badChoice = badDishes.find((dish) => dish.name === choice);
+
+      if (choice === target) {
+        state.currentTargetIndex += 1;
+        feedback.className = "feedback good";
+        feedback.textContent = `Jawohl: ${choice}. Das riecht nach Geburtstagsküche.`;
+        if (state.currentTargetIndex >= orders.length) {
+          state.locked = true;
+          updateView();
+          setTimeout(nextRound, 900);
+          return;
+        }
+        prompt.textContent = `Sehr gut. Jetzt Teller ${state.currentTargetIndex + 1} aus dem Gedächtnis.`;
+        updateView();
+        return;
+      }
+
+      state.mistakes += 1;
+      feedback.className = "feedback bad";
+      feedback.textContent = badChoice ? badChoice.roast : `Fast. Teller ${state.currentTargetIndex + 1} wollte nicht ${choice}.`;
+
+      if (state.mistakes >= 3) {
+        state.locked = true;
+        updateView();
+        setTimeout(() => {
+          state.mistakes = 0;
+          startRound();
+        }, 1200);
+        return;
+      }
+
+      updateView();
+    }
+
+    function nextRound() {
+      const level = getCurrentLevel();
+      if (state.roundIndex < level.rounds.length - 1) {
+        state.roundIndex += 1;
+        startRound();
+        return;
+      }
+
+      if (state.levelIndex < levels.length - 1) {
+        state.levelIndex += 1;
+        state.roundIndex = 0;
+        feedback.className = "feedback good";
+        feedback.textContent = "Level 1 geschafft. Jetzt wird die Küche ein bisschen voller.";
+        startRound();
+        return;
+      }
+
+      clearTimeout(previewTimer);
+      showScreen("final");
+    }
+
+    startButton.addEventListener("click", startGame);
+    playAgainButton.addEventListener("click", startGame);
+    restartButton.addEventListener("click", startGame);
+    showOrdersButton.addEventListener("click", brieflyShowOrders);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
