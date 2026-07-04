@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -90,6 +90,14 @@
     .copy { padding: 22px 18px 20px; text-align: center; }
     h1 { margin: 0; color: var(--navy); font-size: clamp(2.25rem, 11vw, 4.6rem); line-height: .92; text-transform: uppercase; }
     .tagline, .small-note { margin: 12px auto 0; max-width: 34rem; color: var(--muted); font-size: clamp(1rem, 4.3vw, 1.16rem); line-height: 1.42; }
+    .start-rules {
+      margin: 16px auto 0; max-width: 36rem; border: 2px solid rgba(21,87,212,.18); border-radius: 8px;
+      padding: 13px 12px; background: linear-gradient(180deg, #ffffff, #f4f7ff);
+      box-shadow: 0 10px 22px rgba(7,26,73,.1); text-align: left;
+    }
+    .start-rules b { display: block; color: var(--navy); font-size: clamp(1.14rem, 5vw, 1.45rem); line-height: 1.08; text-transform: uppercase; }
+    .rule-line { margin-top: 8px; color: var(--ink); font-size: clamp(.94rem, 4vw, 1.05rem); font-weight: 900; line-height: 1.28; }
+    .rule-line span { color: var(--red); }
     .creator-credit { display: inline-grid; place-items: center; min-height: 34px; margin-top: 14px; border: 1px solid rgba(7,26,73,.18); border-radius: 999px; padding: 0 14px; color: var(--navy); background: rgba(255,211,92,.72); font-size: .82rem; font-weight: 950; text-transform: uppercase; }
     .primary { width: min(360px, 100%); min-height: 58px; margin-top: 18px; border-radius: 8px; color: #fff; background: linear-gradient(135deg, var(--red), #b80f2a); box-shadow: 0 12px 24px rgba(232, 34, 61, .28); font-weight: 950; text-transform: uppercase; }
     .primary:active, .zone-button:active, .sound-button:active { transform: translateY(2px); }
@@ -101,13 +109,16 @@
     .value { display: block; margin-top: 3px; color: var(--navy); font-size: clamp(1.2rem, 5.8vw, 1.58rem); font-weight: 950; line-height: 1; }
     .fever .label, .fever .value { color: var(--red); }
 
-    .rules { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: #fff; color: var(--navy); font-size: .86rem; font-weight: 850; text-align: center; }
-    .rules strong { color: var(--red); }
+    .rules { border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; background: #fff; color: var(--navy); text-align: center; box-shadow: 0 8px 18px rgba(7,26,73,.06); }
+    .rules b { display: block; color: var(--red); font-size: clamp(.98rem, 4.4vw, 1.18rem); line-height: 1.1; text-transform: uppercase; }
+    .rules span { display: block; margin-top: 4px; color: var(--navy); font-size: clamp(.78rem, 3.5vw, .92rem); font-weight: 900; line-height: 1.22; }
 
     .arena { position: relative; min-height: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: linear-gradient(180deg, #071a49, #113a90); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
     canvas { display: block; width: 100%; height: 100%; touch-action: none; }
     .zone-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-    .zone-button { min-height: 66px; border-radius: 8px; color: #fff; font-weight: 950; text-transform: uppercase; box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 8px 16px rgba(7,26,73,.12); }
+    .zone-button { min-height: 72px; border-radius: 8px; color: #fff; font-weight: 950; text-transform: uppercase; box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 8px 16px rgba(7,26,73,.12); }
+    .zone-button strong { display: block; font-size: clamp(1rem, 4.4vw, 1.2rem); line-height: 1; }
+    .zone-button span { display: block; margin-top: 5px; padding: 0 4px; font-size: clamp(.62rem, 2.8vw, .78rem); line-height: 1.12; opacity: .92; text-transform: none; }
     .sky { background: linear-gradient(135deg, #1557d4, #071a49); }
     .grill { background: linear-gradient(135deg, #e8223d, #8e1021); }
     .cooler { background: linear-gradient(135deg, #24a8ff, #1557d4); }
@@ -129,8 +140,11 @@
       .copy { padding: 16px 14px; }
       .primary { min-height: 52px; margin-top: 12px; }
       .tagline, .small-note { font-size: .94rem; }
-      .zone-button { min-height: 54px; }
-      .rules { font-size: .78rem; padding: 7px; }
+      .start-rules { margin-top: 11px; padding: 10px; }
+      .rule-line { margin-top: 6px; font-size: .82rem; }
+      .zone-button { min-height: 58px; }
+      .zone-button span { margin-top: 3px; font-size: .58rem; }
+      .rules { padding: 7px; }
     }
   </style>
 </head>
@@ -142,7 +156,11 @@
         <div class="hero-art" aria-hidden="true"><div class="hero-badge"><div><strong>Swipe<br>Battle</strong><span>America 250</span></div></div></div>
         <div class="copy">
           <h1 id="title">Cookout Chaos</h1>
-          <p class="tagline">Swipe polished game-photo cards into the right zone. Simple score, fast rounds, fireworks when you hit 250 Fever.</p>
+          <p class="tagline">A 20-second July 4th swipe battle. Sort fast, build a streak, and trigger fireworks.</p>
+          <div class="start-rules" aria-label="How to play">
+            <b>Swipe or tap the right zone before time runs out.</b>
+            <div class="rule-line"><span>Food</span> &rarr; Grill &nbsp; <span>Drinks</span> &rarr; Cooler &nbsp; <span>Firework</span> &rarr; Sky &nbsp; <span>Bad stuff</span> &rarr; Bin</div>
+          </div>
           <div class="creator-credit">Created by Rosina's Agent</div>
           <button class="primary" id="playButton" type="button">Start Battle</button>
         </div>
@@ -156,13 +174,13 @@
           <div class="stat"><span class="label">Score</span><span class="value" id="scoreValue">0</span></div>
           <div class="stat" id="streakStat"><span class="label">Streak</span><span class="value" id="streakValue">0</span></div>
         </div>
-        <div class="rules">Food to <strong>Grill</strong>. Drinks to <strong>Cooler</strong>. Fireworks to <strong>Sky</strong>. Trash to <strong>Bin</strong>.</div>
+        <div class="rules"><b>Sort the card into the matching zone</b><span>Food &rarr; Grill | Drinks &rarr; Cooler | Firework &rarr; Sky | Bad stuff &rarr; Bin</span></div>
         <div class="arena" id="arena"><canvas id="gameCanvas" width="720" height="860" aria-label="Swipe battle area"></canvas></div>
         <div class="zone-grid">
-          <button class="zone-button sky" data-zone="sky" type="button">Sky</button>
-          <button class="zone-button grill" data-zone="grill" type="button">Grill</button>
-          <button class="zone-button cooler" data-zone="cooler" type="button">Cooler</button>
-          <button class="zone-button bin" data-zone="bin" type="button">Bin</button>
+          <button class="zone-button sky" data-zone="sky" type="button"><strong>Sky</strong><span>Firework</span></button>
+          <button class="zone-button grill" data-zone="grill" type="button"><strong>Grill</strong><span>Burger Hotdog Corn</span></button>
+          <button class="zone-button cooler" data-zone="cooler" type="button"><strong>Cooler</strong><span>Soda Lemonade</span></button>
+          <button class="zone-button bin" data-zone="bin" type="button"><strong>Bin</strong><span>Trash Burnt Wrong</span></button>
         </div>
       </div>
     </section>
@@ -394,6 +412,7 @@
           messageTone: "white",
           current: null,
           itemAge: 0,
+          sortedCount: 0,
           particles: []
         };
         nextItem();
@@ -458,6 +477,7 @@
           state.message = `Nope. ${state.current.name} goes to ${state.current.zone.toUpperCase()}.`;
           state.messageTone = "#ffd35c";
         }
+        state.sortedCount += 1;
         nextItem();
         updateHud();
       }
@@ -535,18 +555,21 @@
         ctx.fillRect(0, 0, W, H);
 
         const zones = [
-          ["SKY", W / 2, 58, "#ffffff"],
-          ["GRILL", 92, H / 2 + 12, "#ffd35c"],
-          ["COOLER", W - 96, H / 2 + 12, "#ffffff"],
-          ["BIN", W / 2, H - 58, "#ffffff"]
+          ["SWIPE UP", "SKY", W / 2, 58, "#ffffff"],
+          ["LEFT", "GRILL", 92, H / 2 + 12, "#ffd35c"],
+          ["RIGHT", "COOLER", W - 96, H / 2 + 12, "#ffffff"],
+          ["SWIPE DOWN", "BIN", W / 2, H - 58, "#ffffff"]
         ];
-        ctx.font = "900 26px Segoe UI, sans-serif";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        zones.forEach(([label, x, y, color]) => {
+        zones.forEach(([hint, label, x, y, color]) => {
+          ctx.globalAlpha = 0.92;
           ctx.fillStyle = color;
-          ctx.globalAlpha = 0.9;
+          ctx.font = "950 27px Segoe UI, sans-serif";
           ctx.fillText(label, x, y);
+          ctx.globalAlpha = 0.76;
+          ctx.font = "850 14px Segoe UI, sans-serif";
+          ctx.fillText(hint, x, y + 28);
         });
         ctx.globalAlpha = 1;
       }
@@ -676,9 +699,37 @@
         ctx.fillText(state.message, W / 2, H - 112);
       }
 
+      function directionFor(zone) {
+        return { sky: "Swipe up", grill: "Swipe left", cooler: "Swipe right", bin: "Swipe down" }[zone] || "Tap a zone";
+      }
+
+      function drawIntroHint() {
+        if (!state.current || state.sortedCount >= 4) return;
+        const item = state.current;
+        const alpha = Math.max(0, Math.min(1, 1.15 - state.sortedCount * 0.08));
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = "rgba(255,255,255,.96)";
+        roundedRect(48, 92, W - 96, 82, 16);
+        ctx.fill();
+        ctx.strokeStyle = itemMeta(item).c1;
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.fillStyle = "#071a49";
+        ctx.font = "950 28px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(`SEND THIS TO ${item.zone.toUpperCase()}`, W / 2, 122);
+        ctx.fillStyle = "#e8223d";
+        ctx.font = "900 18px Segoe UI, sans-serif";
+        ctx.fillText(`${directionFor(item.zone)} or tap ${item.zone.toUpperCase()}`, W / 2, 151);
+        ctx.restore();
+      }
+
       function render() {
         drawBackground();
         drawItem();
+        drawIntroHint();
         drawParticles();
         drawMessage();
       }
