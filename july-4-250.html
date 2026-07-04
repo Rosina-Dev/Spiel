@@ -1,0 +1,685 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cookout Chaos: Swipe Battle</title>
+  <meta name="description" content="A fast 4th of July swipe battle for America's 250th anniversary.">
+  <meta property="og:title" content="Cookout Chaos: Swipe Battle">
+  <meta property="og:description" content="Swipe cookout chaos into the right zones, trigger 250 Fever, and beat your friends' score.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    :root {
+      color-scheme: light;
+      --navy: #071a49;
+      --blue: #1557d4;
+      --red: #e8223d;
+      --white: #fffaf0;
+      --gold: #ffd35c;
+      --ink: #06122f;
+      --muted: #5b6580;
+      --line: rgba(7, 26, 73, 0.16);
+      --shadow: 0 18px 42px rgba(4, 15, 45, 0.26);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; overscroll-behavior: none; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 10%, rgba(255, 211, 92, 0.55), transparent 23%),
+        radial-gradient(circle at 84% 12%, rgba(255, 255, 255, 0.48), transparent 24%),
+        linear-gradient(180deg, #071a49 0 20%, #ffffff 20% 29%, #e8223d 29% 38%, #ffffff 38% 47%, #e8223d 47% 56%, #ffffff 56% 65%, #1557d4 65% 100%);
+      letter-spacing: 0;
+      user-select: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button { border: 0; font: inherit; cursor: pointer; touch-action: none; }
+    .app { width: min(760px, 100%); min-height: 100svh; margin: 0 auto; padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); display: grid; align-items: center; }
+    .screen { display: none; width: 100%; }
+    .screen.active { display: block; }
+
+    .sound-button {
+      position: fixed; top: max(12px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); z-index: 5;
+      min-height: 40px; border: 1px solid rgba(255,255,255,.5); border-radius: 8px; padding: 0 12px;
+      color: #fff; background: rgba(7, 26, 73, .82); box-shadow: 0 10px 24px rgba(0,0,0,.18);
+      font-size: .76rem; font-weight: 950; text-transform: uppercase;
+    }
+
+    .shell {
+      min-height: calc(100svh - 24px); border: 1px solid rgba(255,255,255,.55); border-radius: 8px; overflow: hidden;
+      background: rgba(255, 250, 240, .96); box-shadow: var(--shadow);
+    }
+
+    .hero, .finale { display: grid; grid-template-rows: minmax(245px, 42svh) auto; }
+    .hero-art {
+      position: relative; display: grid; place-items: center; overflow: hidden;
+      background:
+        radial-gradient(circle at 25% 18%, rgba(255,255,255,.9) 0 2px, transparent 3px) 0 0 / 42px 42px,
+        linear-gradient(145deg, rgba(7,26,73,.98), rgba(21,87,212,.92));
+    }
+    .hero-art::before {
+      content: ""; position: absolute; inset: auto -8% 0; height: 42%; transform: rotate(-6deg);
+      background: repeating-linear-gradient(180deg, #e8223d 0 18px, #fff 18px 36px);
+      box-shadow: 0 -18px 36px rgba(0,0,0,.16);
+    }
+    .hero-badge {
+      position: relative; z-index: 1; width: min(315px, 78vw); aspect-ratio: 1.18; border-radius: 8px;
+      display: grid; place-items: center; text-align: center; color: #fff;
+      background: linear-gradient(135deg, #e8223d, #071a49 48%, #1557d4);
+      box-shadow: inset 0 0 0 10px rgba(255,255,255,.18), 0 22px 46px rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.52);
+    }
+    .hero-badge strong { display: block; font-size: clamp(2.4rem, 13vw, 5.1rem); line-height: .84; text-transform: uppercase; }
+    .hero-badge span { display: block; margin-top: 8px; color: var(--gold); font-weight: 950; text-transform: uppercase; }
+
+    .copy { padding: 22px 18px 20px; text-align: center; }
+    h1 { margin: 0; color: var(--navy); font-size: clamp(2.25rem, 11vw, 4.6rem); line-height: .92; text-transform: uppercase; }
+    .tagline, .small-note { margin: 12px auto 0; max-width: 34rem; color: var(--muted); font-size: clamp(1rem, 4.3vw, 1.16rem); line-height: 1.42; }
+    .primary { width: min(360px, 100%); min-height: 58px; margin-top: 18px; border-radius: 8px; color: #fff; background: linear-gradient(135deg, var(--red), #b80f2a); box-shadow: 0 12px 24px rgba(232, 34, 61, .28); font-weight: 950; text-transform: uppercase; }
+    .primary:active, .zone-button:active, .sound-button:active { transform: translateY(2px); }
+
+    .game-shell { min-height: calc(100svh - 24px); display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 9px; padding: 10px; background: rgba(255,255,255,.94); }
+    .hud { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .stat { min-height: 54px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px; background: #fff; box-shadow: 0 8px 18px rgba(7,26,73,.08); }
+    .label { display: block; color: var(--muted); font-size: .68rem; font-weight: 950; text-transform: uppercase; }
+    .value { display: block; margin-top: 3px; color: var(--navy); font-size: clamp(1.2rem, 5.8vw, 1.58rem); font-weight: 950; line-height: 1; }
+    .fever .label, .fever .value { color: var(--red); }
+
+    .rules { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: #fff; color: var(--navy); font-size: .86rem; font-weight: 850; text-align: center; }
+    .rules strong { color: var(--red); }
+
+    .arena { position: relative; min-height: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: linear-gradient(180deg, #071a49, #113a90); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    .zone-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .zone-button { min-height: 66px; border-radius: 8px; color: #fff; font-weight: 950; text-transform: uppercase; box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 8px 16px rgba(7,26,73,.12); }
+    .sky { background: linear-gradient(135deg, #1557d4, #071a49); }
+    .grill { background: linear-gradient(135deg, #e8223d, #8e1021); }
+    .cooler { background: linear-gradient(135deg, #24a8ff, #1557d4); }
+    .bin { background: linear-gradient(135deg, #32394a, #111827); }
+
+    .final-score { margin-top: 10px; color: var(--navy); font-size: clamp(3rem, 17vw, 5.4rem); font-weight: 950; line-height: 1; }
+
+    @media (min-width: 780px) {
+      .app { width: min(1050px, 100%); padding: 18px; }
+      .hero, .finale { min-height: min(720px, calc(100vh - 36px)); grid-template-columns: 1fr 1fr; grid-template-rows: 1fr; }
+      .copy { display: grid; align-content: center; padding: 34px; }
+      .game-shell { min-height: min(820px, calc(100vh - 36px)); grid-template-columns: minmax(0, 1fr) 260px; grid-template-rows: auto auto minmax(0, 1fr); }
+      .hud, .rules { grid-column: 1 / -1; }
+      .zone-grid { grid-template-columns: 1fr; grid-template-rows: repeat(4, minmax(92px, 1fr)); }
+    }
+
+    @media (max-height: 690px) {
+      .hero, .finale { grid-template-rows: minmax(180px, 33svh) auto; }
+      .copy { padding: 16px 14px; }
+      .primary { min-height: 52px; margin-top: 12px; }
+      .tagline, .small-note { font-size: .94rem; }
+      .zone-button { min-height: 54px; }
+      .rules { font-size: .78rem; padding: 7px; }
+    }
+  </style>
+</head>
+<body>
+  <button class="sound-button" id="soundButton" type="button" aria-pressed="true">Music On</button>
+  <main class="app">
+    <section class="screen active" id="startScreen" aria-labelledby="title">
+      <div class="shell hero">
+        <div class="hero-art" aria-hidden="true"><div class="hero-badge"><div><strong>Swipe<br>Battle</strong><span>America 250</span></div></div></div>
+        <div class="copy">
+          <h1 id="title">Cookout Chaos</h1>
+          <p class="tagline">Swipe polished game-photo cards into the right zone. Simple score, fast rounds, fireworks when you hit 250 Fever.</p>
+          <button class="primary" id="playButton" type="button">Start Battle</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="gameScreen" aria-label="Cookout Chaos game">
+      <div class="game-shell">
+        <div class="hud" aria-live="polite">
+          <div class="stat"><span class="label">Time</span><span class="value" id="timeValue">60</span></div>
+          <div class="stat"><span class="label">Score</span><span class="value" id="scoreValue">0</span></div>
+          <div class="stat" id="streakStat"><span class="label">Streak</span><span class="value" id="streakValue">0</span></div>
+        </div>
+        <div class="rules">Food to <strong>Grill</strong>. Drinks to <strong>Cooler</strong>. Fireworks to <strong>Sky</strong>. Trash to <strong>Bin</strong>.</div>
+        <div class="arena" id="arena"><canvas id="gameCanvas" width="720" height="860" aria-label="Swipe battle area"></canvas></div>
+        <div class="zone-grid">
+          <button class="zone-button sky" data-zone="sky" type="button">Sky</button>
+          <button class="zone-button grill" data-zone="grill" type="button">Grill</button>
+          <button class="zone-button cooler" data-zone="cooler" type="button">Cooler</button>
+          <button class="zone-button bin" data-zone="bin" type="button">Bin</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="endScreen" aria-labelledby="rankText">
+      <div class="shell finale">
+        <div class="hero-art" aria-hidden="true"><div class="hero-badge"><div><strong>Final<br>Score</strong><span>Beat this</span></div></div></div>
+        <div class="copy">
+          <h1 id="rankText">Block Party</h1>
+          <div class="final-score" id="finalScore">0</div>
+          <p class="small-note" id="finalNote">Send this score to someone and make them prove it.</p>
+          <button class="primary" id="replayButton" type="button">Play Again</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d", { alpha: false });
+      const arena = document.getElementById("arena");
+      const screens = { start: document.getElementById("startScreen"), game: document.getElementById("gameScreen"), end: document.getElementById("endScreen") };
+      const soundButton = document.getElementById("soundButton");
+      const timeValue = document.getElementById("timeValue");
+      const scoreValue = document.getElementById("scoreValue");
+      const streakValue = document.getElementById("streakValue");
+      const streakStat = document.getElementById("streakStat");
+      const finalScore = document.getElementById("finalScore");
+      const rankText = document.getElementById("rankText");
+      const finalNote = document.getElementById("finalNote");
+      const W = 720;
+      const H = 860;
+      const assetSheet = new Image();
+      assetSheet.src = "cookout-chaos-assets-clean.png";
+      assetSheet.onload = () => { if (state) render(); };
+      const spriteIndex = { burger: 0, hotdog: 1, corn: 2, soda: 3, lemonade: 4, firework: 5, trash: 6, burnt: 7, ticket: 8 };
+      const items = [
+        { name: "Burger", zone: "grill", kind: "burger" },
+        { name: "Hotdog", zone: "grill", kind: "hotdog" },
+        { name: "Corn", zone: "grill", kind: "corn" },
+        { name: "Soda", zone: "cooler", kind: "soda" },
+        { name: "Lemonade", zone: "cooler", kind: "lemonade" },
+        { name: "Firework", zone: "sky", kind: "firework" },
+        { name: "Trash", zone: "bin", kind: "trash" },
+        { name: "Burnt Food", zone: "bin", kind: "burnt" },
+        { name: "Wrong Ticket", zone: "bin", kind: "ticket" }
+      ];
+      let state;
+      let lastTime = 0;
+      let rafId = 0;
+      let pointer = null;
+      let audioCtx = null;
+      let masterGain = null;
+      let musicTimer = 0;
+      let musicOn = true;
+
+      function show(name) {
+        Object.values(screens).forEach((screen) => screen.classList.remove("active"));
+        screens[name].classList.add("active");
+      }
+
+      function initAudio() {
+        if (audioCtx) return;
+        const Context = window.AudioContext || window.webkitAudioContext;
+        if (!Context) {
+          musicOn = false;
+          soundButton.textContent = "No Audio";
+          soundButton.setAttribute("aria-pressed", "false");
+          return;
+        }
+        audioCtx = new Context();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.value = 0.16;
+        masterGain.connect(audioCtx.destination);
+        startMusic();
+      }
+
+      function tone(freq, start, dur, type = "sine", gain = 0.07) {
+        if (!audioCtx || !musicOn) return;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, start);
+        g.gain.setValueAtTime(0, start);
+        g.gain.linearRampToValueAtTime(gain, start + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+        osc.connect(g); g.connect(masterGain); osc.start(start); osc.stop(start + dur + 0.03);
+      }
+
+      function kick(start) {
+        if (!audioCtx || !musicOn) return;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(120, start);
+        osc.frequency.exponentialRampToValueAtTime(42, start + 0.18);
+        g.gain.setValueAtTime(0.001, start);
+        g.gain.linearRampToValueAtTime(0.42, start + 0.01);
+        g.gain.exponentialRampToValueAtTime(0.001, start + 0.34);
+        osc.connect(g); g.connect(masterGain); osc.start(start); osc.stop(start + 0.38);
+      }
+
+      function noiseHit(start, dur, gain, type = "highpass", freq = 1800) {
+        if (!audioCtx || !musicOn) return;
+        const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+        const src = audioCtx.createBufferSource();
+        const g = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = type;
+        filter.frequency.value = freq;
+        g.gain.setValueAtTime(gain, start);
+        g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+        src.buffer = buffer;
+        src.connect(filter); filter.connect(g); g.connect(masterGain); src.start(start);
+      }
+
+      function snare(start) {
+        noiseHit(start, 0.18, 0.18, "bandpass", 1700);
+        tone(185, start, 0.12, "triangle", 0.055);
+      }
+
+      function hat(start, open = false) {
+        noiseHit(start, open ? 0.16 : 0.045, open ? 0.055 : 0.038, "highpass", 5200);
+      }
+
+      function bass(freq, start, dur) {
+        if (!audioCtx || !musicOn) return;
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        const filter = audioCtx.createBiquadFilter();
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(freq, start);
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(180, start);
+        g.gain.setValueAtTime(0.001, start);
+        g.gain.linearRampToValueAtTime(0.11, start + 0.018);
+        g.gain.exponentialRampToValueAtTime(0.001, start + dur);
+        osc.connect(filter); filter.connect(g); g.connect(masterGain); osc.start(start); osc.stop(start + dur + 0.04);
+      }
+
+      function startMusic() {
+        clearInterval(musicTimer);
+        if (!audioCtx) return;
+        const step = 60 / 96 / 2;
+        const bassLine = [55, 55, 65.41, 55, 73.42, 65.41, 55, 49];
+        function bar() {
+          if (!musicOn || !audioCtx) return;
+          const t = audioCtx.currentTime + 0.04;
+          for (let i = 0; i < 16; i += 1) {
+            const at = t + i * step;
+            if ([0, 6, 10, 14].includes(i)) kick(at);
+            if ([4, 12].includes(i)) snare(at);
+            if (i % 2 === 0) hat(at, i === 15);
+            if ([1, 3, 7, 9, 13].includes(i)) hat(at + step * 0.52, false);
+            if (i % 2 === 0) bass(bassLine[(i / 2) % bassLine.length], at, step * 0.82);
+          }
+          tone(293.66, t + step * 3.5, 0.09, "square", 0.018);
+          tone(329.63, t + step * 7.5, 0.09, "square", 0.018);
+          tone(246.94, t + step * 11.5, 0.11, "square", 0.016);
+        }
+        bar();
+        musicTimer = setInterval(bar, step * 16 * 1000);
+      }
+
+      function setMusic(on) {
+        musicOn = on;
+        soundButton.textContent = musicOn ? "Music On" : "Music Off";
+        soundButton.setAttribute("aria-pressed", String(musicOn));
+        if (masterGain) masterGain.gain.setTargetAtTime(musicOn ? 0.16 : 0, audioCtx.currentTime, 0.03);
+        if (musicOn && audioCtx) startMusic();
+      }
+
+      function resizeCanvas() {
+        const rect = arena.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+        ctx.setTransform(canvas.width / W, 0, 0, canvas.height / H, 0, 0);
+      }
+
+      function resetState() {
+        state = {
+          running: true,
+          elapsed: 0,
+          score: 0,
+          streak: 0,
+          fever: 0,
+          message: "Sort it fast.",
+          messageTone: "white",
+          current: null,
+          itemAge: 0,
+          particles: []
+        };
+        nextItem();
+        updateHud();
+      }
+
+      function startGame() {
+        initAudio();
+        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+        setMusic(musicOn);
+        resetState();
+        show("game");
+        resizeCanvas();
+        lastTime = performance.now();
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(loop);
+      }
+
+      function endGame() {
+        state.running = false;
+        cancelAnimationFrame(rafId);
+        if (state.score >= 35) burst(W / 2, H / 2, 90);
+        const rank = getRank(state.score);
+        finalScore.textContent = String(state.score);
+        rankText.textContent = rank.title;
+        finalNote.textContent = rank.note;
+        show("end");
+      }
+
+      function getRank(score) {
+        if (score >= 50) return { title: "250 Legend", note: `Beat this score: ${score}. Screenshot-worthy.` };
+        if (score >= 35) return { title: "Firework Mode", note: `Beat this score: ${score}. That run had heat.` };
+        if (score >= 20) return { title: "Block Party", note: `Beat this score: ${score}. Clean enough to flex.` };
+        return { title: "Rookie", note: `Beat this score: ${score}. Warm-up run, obviously.` };
+      }
+
+      function nextItem() {
+        const item = items[Math.floor(Math.random() * items.length)];
+        state.current = { ...item, x: W / 2, y: H / 2 + 16, r: 74, spin: 0 };
+        state.itemAge = 0;
+      }
+
+      function choose(zone) {
+        if (!state.running || !state.current) return;
+        const correct = zone === state.current.zone;
+        if (correct) {
+          const fast = state.itemAge < 1.1;
+          const points = (state.fever > 0 ? 2 : 1) + (fast && state.streak > 0 && state.streak % 5 === 0 ? 1 : 0);
+          state.score = Math.min(99, state.score + points);
+          state.streak += 1;
+          state.message = fast ? `Fast ${state.current.name}: +${points}` : `${state.current.name}: +${points}`;
+          state.messageTone = "#ffffff";
+          burst(state.current.x, state.current.y, state.streak >= 10 ? 34 : 14);
+          if (state.streak === 10 || state.streak % 12 === 0) {
+            state.fever = 7;
+            state.message = "250 Fever. Double points.";
+            bigFireworks();
+          }
+        } else {
+          state.score = Math.max(0, state.score - 1);
+          state.streak = 0;
+          state.message = `Nope. ${state.current.name} goes to ${state.current.zone.toUpperCase()}.`;
+          state.messageTone = "#ffd35c";
+        }
+        nextItem();
+        updateHud();
+      }
+
+      function zoneFromSwipe(dx, dy) {
+        if (Math.hypot(dx, dy) < 36) return null;
+        if (Math.abs(dy) > Math.abs(dx) && dy < 0) return "sky";
+        if (Math.abs(dy) > Math.abs(dx) && dy > 0) return "bin";
+        return dx < 0 ? "grill" : "cooler";
+      }
+
+      function burst(x, y, count) {
+        for (let i = 0; i < count; i += 1) {
+          const a = Math.random() * Math.PI * 2;
+          const s = 120 + Math.random() * 280;
+          state.particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 0.45 + Math.random() * 0.55, color: ["#ffffff", "#e8223d", "#1557d4", "#ffd35c"][Math.floor(Math.random() * 4)], size: 3 + Math.random() * 5 });
+        }
+      }
+
+      function bigFireworks() {
+        burst(W * 0.25, H * 0.28, 45);
+        burst(W * 0.72, H * 0.23, 45);
+        burst(W * 0.52, H * 0.36, 34);
+      }
+
+      function updateHud() {
+        timeValue.textContent = String(Math.max(0, Math.ceil(60 - state.elapsed)));
+        scoreValue.textContent = String(state.score);
+        streakValue.textContent = state.fever > 0 ? `${Math.ceil(state.fever)}s` : String(state.streak);
+        streakStat.classList.toggle("fever", state.fever > 0);
+        streakStat.querySelector(".label").textContent = state.fever > 0 ? "250 Fever" : "Streak";
+      }
+
+      function update(dt) {
+        state.elapsed += dt;
+        state.itemAge += dt;
+        state.fever = Math.max(0, state.fever - dt);
+        if (state.elapsed >= 60) {
+          endGame();
+          return;
+        }
+        state.current.spin += dt * 1.5;
+        state.particles = state.particles.filter((p) => {
+          p.life -= dt;
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.vy += 160 * dt;
+          return p.life > 0;
+        });
+        updateHud();
+      }
+
+      function drawStar(x, y, outer, inner, points = 5) {
+        ctx.beginPath();
+        for (let i = 0; i < points * 2; i += 1) {
+          const r = i % 2 ? inner : outer;
+          const a = -Math.PI / 2 + i * Math.PI / points;
+          ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r);
+        }
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      function drawBackground() {
+        ctx.fillStyle = "#071a49";
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "rgba(255,255,255,.18)";
+        for (let x = 18; x < W; x += 70) for (let y = 20; y < H * 0.48; y += 62) drawStar(x, y, 7, 3.2);
+        const stripeH = 46;
+        for (let i = 0; i < 8; i += 1) {
+          ctx.fillStyle = i % 2 ? "#ffffff" : "#e8223d";
+          ctx.fillRect(0, H * 0.58 + i * stripeH, W, stripeH);
+        }
+        ctx.fillStyle = "rgba(7,26,73,.88)";
+        ctx.fillRect(0, 0, W, H);
+
+        const zones = [
+          ["SKY", W / 2, 58, "#ffffff"],
+          ["GRILL", 92, H / 2 + 12, "#ffd35c"],
+          ["COOLER", W - 96, H / 2 + 12, "#ffffff"],
+          ["BIN", W / 2, H - 58, "#ffffff"]
+        ];
+        ctx.font = "900 26px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        zones.forEach(([label, x, y, color]) => {
+          ctx.fillStyle = color;
+          ctx.globalAlpha = 0.9;
+          ctx.fillText(label, x, y);
+        });
+        ctx.globalAlpha = 1;
+      }
+
+      function roundedRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.arcTo(x + w, y, x + w, y + h, r);
+        ctx.arcTo(x + w, y + h, x, y + h, r);
+        ctx.arcTo(x, y + h, x, y, r);
+        ctx.arcTo(x, y, x + w, y, r);
+        ctx.closePath();
+      }
+
+      function drawItem() {
+        const item = state.current;
+        if (!item) return;
+        const pulse = Math.sin(state.itemAge * 7) * 3;
+        const meta = itemMeta(item);
+        ctx.save();
+        ctx.translate(item.x, item.y);
+        ctx.rotate(Math.sin(item.spin) * 0.035);
+
+        const w = 246;
+        const h = 238;
+        const x = -w / 2;
+        const y = -h / 2;
+        const grad = ctx.createLinearGradient(x, y, x + w, y + h);
+        grad.addColorStop(0, meta.c1);
+        grad.addColorStop(0.54, meta.c2);
+        grad.addColorStop(1, "#071a49");
+
+        ctx.shadowColor = meta.glow;
+        ctx.shadowBlur = state.fever > 0 ? 34 : 18;
+        ctx.fillStyle = grad;
+        roundedRect(x, y, w, h, 24);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.strokeStyle = state.fever > 0 ? "#ffd35c" : "rgba(255,255,255,.76)";
+        ctx.lineWidth = state.fever > 0 ? 7 : 3;
+        ctx.stroke();
+
+        ctx.fillStyle = "rgba(255,255,255,.16)";
+        for (let i = -80; i < 190; i += 44) ctx.fillRect(x + i, y, 18, h);
+        ctx.fillStyle = "rgba(255,255,255,.94)";
+        roundedRect(x + 16, y + 14, w - 32, 36, 18);
+        ctx.fill();
+        ctx.fillStyle = meta.c1;
+        ctx.font = "950 18px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(meta.header, 0, y + 33);
+
+        drawIcon(item.kind, 0, y + 102 + pulse, 1);
+
+        ctx.fillStyle = "#ffffff";
+        ctx.font = item.name.length > 10 ? "950 28px Segoe UI, sans-serif" : "950 34px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(item.name.toUpperCase(), 0, y + 174);
+
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        roundedRect(-72, y + 194, 144, 28, 14);
+        ctx.fill();
+        ctx.fillStyle = "#071a49";
+        ctx.font = "950 14px Segoe UI, sans-serif";
+        ctx.fillText("TO " + item.zone.toUpperCase(), 0, y + 208);
+        ctx.restore();
+      }
+
+      function itemMeta(item) {
+        if (item.zone === "grill") return { header: "COOKOUT DROP", c1: "#e8223d", c2: "#8e1021", glow: "rgba(232,34,61,.55)" };
+        if (item.zone === "cooler") return { header: "COLD DRINK", c1: "#1557d4", c2: "#24a8ff", glow: "rgba(36,168,255,.55)" };
+        if (item.zone === "sky") return { header: "LAUNCH ITEM", c1: "#071a49", c2: "#1557d4", glow: "rgba(255,211,92,.6)" };
+        return { header: "CHAOS ITEM", c1: "#32394a", c2: "#111827", glow: "rgba(7,26,73,.5)" };
+      }
+
+      function drawIcon(kind, x, y, scale) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        if (assetSheet.complete && assetSheet.naturalWidth) {
+          const index = spriteIndex[kind] ?? 0;
+          const cols = 3;
+          const cell = assetSheet.naturalWidth / cols;
+          const sx = (index % cols) * cell;
+          const sy = Math.floor(index / cols) * cell;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+          ctx.drawImage(assetSheet, sx + cell * 0.08, sy + cell * 0.08, cell * 0.84, cell * 0.84, -82, -82, 164, 164);
+        } else {
+          ctx.fillStyle = "rgba(255,255,255,.94)";
+          ctx.beginPath();
+          ctx.arc(0, 0, 70, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = "#071a49";
+          ctx.font = "950 28px Segoe UI, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(kind.toUpperCase().slice(0, 4), 0, 0);
+        }
+        ctx.restore();
+      }
+
+      function drawParticles() {
+        state.particles.forEach((p) => {
+          ctx.globalAlpha = Math.max(0, p.life);
+          ctx.fillStyle = p.color;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+      }
+
+      function drawMessage() {
+        ctx.fillStyle = "rgba(255,255,255,.94)";
+        roundedRect(34, H - 138, W - 68, 52, 12);
+        ctx.fill();
+        ctx.fillStyle = state.messageTone;
+        ctx.fillStyle = state.messageTone === "#ffffff" ? "#071a49" : state.messageTone;
+        ctx.font = "900 24px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(state.message, W / 2, H - 112);
+      }
+
+      function render() {
+        drawBackground();
+        drawItem();
+        drawParticles();
+        drawMessage();
+      }
+
+      function loop(now) {
+        const dt = Math.min(0.034, (now - lastTime) / 1000 || 0);
+        lastTime = now;
+        update(dt);
+        render();
+        if (state.running) rafId = requestAnimationFrame(loop);
+      }
+
+      function canvasPoint(event) {
+        const rect = canvas.getBoundingClientRect();
+        return { x: ((event.clientX - rect.left) / rect.width) * W, y: ((event.clientY - rect.top) / rect.height) * H };
+      }
+
+      canvas.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        pointer = canvasPoint(event);
+      });
+      canvas.addEventListener("pointerup", (event) => {
+        event.preventDefault();
+        if (!pointer) return;
+        const end = canvasPoint(event);
+        const zone = zoneFromSwipe(end.x - pointer.x, end.y - pointer.y);
+        pointer = null;
+        if (zone) choose(zone);
+      });
+      canvas.addEventListener("pointercancel", () => { pointer = null; });
+
+      document.querySelectorAll("[data-zone]").forEach((button) => button.addEventListener("click", () => choose(button.dataset.zone)));
+      document.getElementById("playButton").addEventListener("click", startGame);
+      document.getElementById("replayButton").addEventListener("click", startGame);
+      soundButton.addEventListener("click", () => {
+        initAudio();
+        if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+        setMusic(!musicOn);
+      });
+      window.addEventListener("resize", resizeCanvas);
+      window.addEventListener("orientationchange", () => setTimeout(resizeCanvas, 120));
+      window.addEventListener("keydown", (event) => {
+        const map = { ArrowUp: "sky", w: "sky", W: "sky", ArrowDown: "bin", s: "bin", S: "bin", ArrowLeft: "grill", a: "grill", A: "grill", ArrowRight: "cooler", d: "cooler", D: "cooler" };
+        if (!map[event.key]) return;
+        event.preventDefault();
+        choose(map[event.key]);
+      });
+      resizeCanvas();
+    })();
+  </script>
+</body>
+</html>
