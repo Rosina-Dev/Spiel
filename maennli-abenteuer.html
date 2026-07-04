@@ -1,0 +1,815 @@
+﻿<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lieblingsbruederleins Kuechenlauf</title>
+  <meta name="description" content="Ein kleines Koch-Bewegungsspiel fuer Lieblingsbruederlein.">
+  <meta property="og:title" content="Kuechenlauf fuers Lieblingsbruederlein">
+  <meta property="og:description" content="Ein kleines Koch-Bewegungsspiel: Zutaten sammeln, Mayo ausweichen, Geburtstagsmenue retten.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://rosina-dev.github.io/Spiel/maennli-abenteuer.html">
+  <meta property="og:image" content="https://rosina-dev.github.io/Spiel/kuechenlauf-vorschau-klein.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #221f20;
+      --muted: #685d54;
+      --panel: rgba(255, 252, 244, 0.97);
+      --line: rgba(80, 61, 42, 0.18);
+      --tomato: #d94f45;
+      --basil: #2f8f5b;
+      --gold: #f3b63f;
+      --blue: #497fc4;
+      --plum: #77518c;
+      --cream: #fff7e3;
+      --shadow: 0 18px 38px rgba(42, 30, 18, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 16% 14%, rgba(217, 79, 69, 0.16), transparent 25%),
+        radial-gradient(circle at 84% 12%, rgba(47, 143, 91, 0.14), transparent 24%),
+        linear-gradient(135deg, #fff4d5 0%, #dff0d7 48%, #d8e3fb 100%);
+      letter-spacing: 0;
+    }
+
+    button, a { font: inherit; }
+
+    .app {
+      width: min(1120px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 16px;
+      display: grid;
+      align-items: center;
+    }
+
+    .shell {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.28)),
+        repeating-linear-gradient(90deg, rgba(243, 182, 63, 0.2) 0 18px, transparent 18px 36px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 4vw, 2.7rem);
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      max-width: 720px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .home-link, .primary-button, .pad-button {
+      border: 0;
+      border-radius: 8px;
+      min-height: 44px;
+      cursor: pointer;
+      font-weight: 800;
+      text-decoration: none;
+      transition: transform 140ms ease, filter 140ms ease;
+    }
+
+    .home-link {
+      display: inline-grid;
+      place-items: center;
+      padding: 11px 15px;
+      color: var(--ink);
+      background: #f0ddba;
+      white-space: nowrap;
+    }
+
+    .primary-button {
+      padding: 12px 18px;
+      color: #fff;
+      background: var(--tomato);
+      box-shadow: 0 10px 22px rgba(217, 79, 69, 0.24);
+    }
+
+    .home-link:hover, .primary-button:hover, .pad-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+    }
+
+    .game-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 292px;
+      gap: 18px;
+      padding: 18px;
+      align-items: start;
+    }
+
+    .stage { min-width: 0; }
+
+    .canvas-frame {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #dec095;
+      position: relative;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .stat, .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .stat {
+      min-height: 62px;
+      padding: 10px;
+    }
+
+    .stat small {
+      display: block;
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 1.08rem;
+    }
+
+    .side {
+      display: grid;
+      gap: 12px;
+    }
+
+    .panel {
+      padding: 14px;
+    }
+
+    .panel h2 {
+      margin: 0 0 8px;
+      font-size: 1.06rem;
+    }
+
+    .panel p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .recipe-list {
+      display: grid;
+      gap: 7px;
+      margin-top: 10px;
+    }
+
+    .recipe-step {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 7px 9px;
+      border-radius: 8px;
+      background: rgba(255, 247, 227, 0.8);
+      border: 1px solid rgba(80, 61, 42, 0.12);
+      font-weight: 750;
+    }
+
+    .recipe-step.done {
+      color: var(--basil);
+      background: rgba(47, 143, 91, 0.12);
+    }
+
+    .recipe-step.current {
+      outline: 3px solid rgba(243, 182, 63, 0.5);
+      background: rgba(243, 182, 63, 0.18);
+    }
+
+    .message {
+      min-height: 92px;
+      border-left: 5px solid var(--basil);
+      background: rgba(47, 143, 91, 0.1);
+    }
+
+    .message.bad {
+      border-left-color: var(--tomato);
+      background: rgba(217, 79, 69, 0.1);
+    }
+
+    .message.win {
+      border-left-color: var(--gold);
+      background: rgba(243, 182, 63, 0.16);
+    }
+
+    .touch-pad {
+      display: grid;
+      justify-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .pad-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .pad-button {
+      width: 58px;
+      height: 50px;
+      display: grid;
+      place-items: center;
+      background: var(--blue);
+      color: #fff;
+      font-size: 1.25rem;
+      box-shadow: 0 8px 16px rgba(77, 128, 197, 0.22);
+    }
+
+    .pad-button[data-dir="left"], .pad-button[data-dir="right"] { background: var(--plum); }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 860px) {
+      .topbar, .game-wrap { grid-template-columns: 1fr; }
+      .home-link { justify-self: start; }
+      .side { grid-template-columns: 1fr 1fr; }
+      .recipe-panel, .message, .controls-panel { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 560px) {
+      .app { padding: 10px; }
+      .topbar, .game-wrap { padding: 12px; }
+      .canvas-frame { aspect-ratio: 3 / 4; }
+      .hud, .side { grid-template-columns: 1fr; }
+      .stat { min-height: 54px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="shell" aria-labelledby="title">
+      <header class="topbar">
+        <div>
+          <h1 id="title">Kuechenlauf fuers Lieblingsbruederlein</h1>
+          <p class="subtitle">Steuere den kleinen Koch durch die Kueche, sammle die Zutaten genau in Rezept-Reihenfolge und bring alles zum Topf. Falsche Zutaten und gekaufte Mayo machen Pannen.</p>
+        </div>
+        <a class="home-link" href="index.html">Zurueck zum Kochspiel</a>
+      </header>
+
+      <div class="game-wrap">
+        <section class="stage" aria-label="Spielfeld">
+          <div class="canvas-frame">
+            <canvas id="game" width="800" height="600"></canvas>
+          </div>
+          <div class="hud" aria-live="polite">
+            <div class="stat"><small>Gericht</small><strong id="dish">Lasagne</strong></div>
+            <div class="stat"><small>Zeit</small><strong id="time">60</strong></div>
+            <div class="stat"><small>Pannen</small><strong id="mistakes">0 / 3</strong></div>
+          </div>
+        </section>
+
+        <aside class="side">
+          <div class="panel recipe-panel">
+            <h2>Rezeptkarte</h2>
+            <p id="recipe-help">Hole zuerst die leuchtende Zutat.</p>
+            <div id="recipe-list" class="recipe-list" aria-live="polite"></div>
+          </div>
+
+          <div id="message" class="panel message">
+            <h2>Mise en place</h2>
+            <p>Pfeiltasten, WASD oder Knoepfe: erst die richtige Zutat holen, dann am Ende zum Topf.</p>
+          </div>
+
+          <div class="panel controls-panel">
+            <h2>Steuerung</h2>
+            <div class="touch-pad" aria-label="Touch-Steuerung">
+              <button class="pad-button" data-dir="up" type="button" aria-label="Nach oben">^</button>
+              <div class="pad-row">
+                <button class="pad-button" data-dir="left" type="button" aria-label="Nach links">&lt;</button>
+                <button class="pad-button" data-dir="down" type="button" aria-label="Nach unten">v</button>
+                <button class="pad-button" data-dir="right" type="button" aria-label="Nach rechts">&gt;</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Nochmal kochen</h2>
+            <p>Drei Gerichte warten: Lasagne, Focaccia und Morchel-Rahm-Nudeln.</p>
+            <div class="actions"><button id="restart" class="primary-button" type="button">Neu starten</button></div>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const canvas = document.querySelector("#game");
+    const ctx = canvas.getContext("2d");
+    const dishText = document.querySelector("#dish");
+    const timeText = document.querySelector("#time");
+    const mistakesText = document.querySelector("#mistakes");
+    const recipeList = document.querySelector("#recipe-list");
+    const recipeHelp = document.querySelector("#recipe-help");
+    const message = document.querySelector("#message");
+    const restartButton = document.querySelector("#restart");
+    const padButtons = document.querySelectorAll(".pad-button");
+
+    const keys = new Set();
+    const kitchenItems = {
+      pasta: { label: "Pasta", color: "#f3c76b", icon: "P" },
+      tomate: { label: "Tomate", color: "#d94f45", icon: "T" },
+      basil: { label: "Basilikum", color: "#2f8f5b", icon: "B" },
+      kaese: { label: "Kaese", color: "#ffe08a", icon: "K" },
+      teig: { label: "Teig", color: "#f1d39a", icon: "F" },
+      olivenoel: { label: "Olivenoel", color: "#92a845", icon: "O" },
+      morchel: { label: "Morcheln", color: "#795b42", icon: "M" },
+      rahm: { label: "Rahm", color: "#fff7d8", icon: "R" },
+      knoblauch: { label: "Knoblauch", color: "#f8f0c4", icon: "G" },
+      mayo: { label: "Gekaufte Mayo", color: "#f7f7f7", icon: "!", trap: true },
+      matsch: { label: "Verkochte Pasta", color: "#b9a37f", icon: "!", trap: true }
+    };
+
+    const recipes = [
+      { name: "Lasagne", steps: ["tomate", "pasta", "basil", "kaese"], bonus: "Schichten, Sauce, Kaese: solide Geburtstagsarbeit." },
+      { name: "Focaccia", steps: ["teig", "olivenoel", "basil", "tomate"], bonus: "Aussen knusprig, innen weich. So muss das." },
+      { name: "Morchel-Rahm-Nudeln", steps: ["morchel", "rahm", "knoblauch", "pasta"], bonus: "Rahm, Morcheln, Ruhe. Das ist schon sehr ernstes Kochen." }
+    ];
+
+    const world = { w: 800, h: 600 };
+    let game;
+    let lastTime = 0;
+    let runId = 0;
+
+    function newGame() {
+      game = {
+        recipeIndex: 0,
+        stepIndex: 0,
+        timeLeft: 60,
+        mistakes: 0,
+        running: true,
+        finished: false,
+        player: { x: 92, y: 500, r: 19, speed: 230, invincibleUntil: 0, wobble: 0 },
+        items: [],
+        hazards: [],
+        pot: { x: 690, y: 108, r: 44 }
+      };
+      buildRound();
+      setMessage("Mise en place", "Hole die Zutaten in der Reihenfolge der Rezeptkarte.", "");
+      lastTime = performance.now();
+      runId += 1;
+      requestAnimationFrame((now) => loop(now, runId));
+    }
+
+    function buildRound() {
+      const recipe = currentRecipe();
+      game.stepIndex = 0;
+      game.player.x = 92;
+      game.player.y = 500;
+      game.items = [];
+      game.hazards = [];
+      const ids = unique([...recipe.steps, "mayo", "matsch"]);
+      const spots = shuffle([
+        { x: 134, y: 104 }, { x: 320, y: 108 }, { x: 522, y: 118 },
+        { x: 154, y: 292 }, { x: 380, y: 286 }, { x: 594, y: 312 },
+        { x: 274, y: 468 }, { x: 520, y: 462 }
+      ]);
+      ids.forEach((id, index) => {
+        const spot = spots[index];
+        game.items.push({ id, x: spot.x, y: spot.y, r: 24, taken: false, pulse: index });
+      });
+      game.hazards = [
+        { x: 230, y: 210, r: 28, vx: 70, vy: 0, label: "Mehlwolke" },
+        { x: 500, y: 380, r: 30, vx: -55, vy: 35, label: "Heisse Pfanne" },
+        { x: 675, y: 250, r: 26, vx: 0, vy: 62, label: "Oelspritzer" }
+      ];
+      updateHud();
+      renderRecipe();
+    }
+
+    function currentRecipe() {
+      return recipes[game.recipeIndex];
+    }
+
+    function loop(now, activeRunId) {
+      if (activeRunId !== runId) return;
+      const dt = Math.min((now - lastTime) / 1000, 0.034);
+      lastTime = now;
+      if (game.running) update(dt, now);
+      draw(now);
+      if (game.running) requestAnimationFrame((nextNow) => loop(nextNow, activeRunId));
+    }
+
+    function update(dt, now) {
+      game.timeLeft -= dt;
+      if (game.timeLeft <= 0) {
+        game.timeLeft = 0;
+        endGame(false, "Zeit abgelaufen", "Die Kueche braucht eine zweite Schicht. Nochmal an den Herd.");
+        return;
+      }
+      movePlayer(dt);
+      moveHazards(dt);
+      checkItems(now);
+      checkHazards(now);
+      checkPot();
+      updateHud();
+    }
+
+    function movePlayer(dt) {
+      let dx = 0;
+      let dy = 0;
+      if (keys.has("ArrowLeft") || keys.has("a")) dx -= 1;
+      if (keys.has("ArrowRight") || keys.has("d")) dx += 1;
+      if (keys.has("ArrowUp") || keys.has("w")) dy -= 1;
+      if (keys.has("ArrowDown") || keys.has("s")) dy += 1;
+      if (dx !== 0 || dy !== 0) {
+        const length = Math.hypot(dx, dy);
+        game.player.x += (dx / length) * game.player.speed * dt;
+        game.player.y += (dy / length) * game.player.speed * dt;
+        game.player.wobble += dt * 14;
+      }
+      game.player.x = clamp(game.player.x, game.player.r + 16, world.w - game.player.r - 16);
+      game.player.y = clamp(game.player.y, game.player.r + 16, world.h - game.player.r - 16);
+    }
+
+    function moveHazards(dt) {
+      game.hazards.forEach((hazard) => {
+        hazard.x += hazard.vx * dt;
+        hazard.y += hazard.vy * dt;
+        if (hazard.x < 90 || hazard.x > world.w - 90) hazard.vx *= -1;
+        if (hazard.y < 92 || hazard.y > world.h - 92) hazard.vy *= -1;
+      });
+    }
+
+    function checkItems(now) {
+      const recipe = currentRecipe();
+      const needed = recipe.steps[game.stepIndex];
+      game.items.forEach((item) => {
+        if (item.taken || distance(item, game.player) > item.r + game.player.r) return;
+        const data = kitchenItems[item.id];
+        if (item.id === needed) {
+          item.taken = true;
+          game.stepIndex += 1;
+          setMessage("Richtige Zutat", `${data.label} ist im Korb. Genau so.`, "");
+          renderRecipe();
+          if (game.stepIndex >= recipe.steps.length) {
+            setMessage("Ab zum Topf", "Alle Zutaten sind bereit. Bring den Koch jetzt an den Herd oben rechts.", "win");
+          }
+          return;
+        }
+        if (now > game.player.invincibleUntil) {
+          makeMistake(data.trap ? data.label : `Noch nicht: ${data.label}`);
+          game.player.invincibleUntil = now + 1000;
+        }
+      });
+    }
+
+    function checkHazards(now) {
+      if (now < game.player.invincibleUntil) return;
+      game.hazards.forEach((hazard) => {
+        if (distance(hazard, game.player) < hazard.r + game.player.r - 4) {
+          makeMistake(hazard.label);
+          game.player.invincibleUntil = now + 1200;
+          game.player.x = clamp(game.player.x - Math.sign(hazard.vx || 1) * 34, 35, world.w - 35);
+          game.player.y = clamp(game.player.y - Math.sign(hazard.vy || 1) * 24, 35, world.h - 35);
+        }
+      });
+    }
+
+    function checkPot() {
+      const recipe = currentRecipe();
+      if (game.stepIndex < recipe.steps.length) return;
+      if (distance(game.pot, game.player) > game.pot.r + game.player.r) return;
+      if (game.recipeIndex < recipes.length - 1) {
+        setMessage("Gericht fertig", `${recipe.name}: ${recipe.bonus} Naechstes Rezept!`, "win");
+        game.recipeIndex += 1;
+        game.timeLeft += 18;
+        buildRound();
+        return;
+      }
+      endGame(true, "Kuechenlauf gewonnen", "Lasagne, Focaccia und Morchel-Rahm-Nudeln sind serviert. Das ist jetzt ein Geburtstagsmenue.");
+    }
+
+    function makeMistake(reason) {
+      game.mistakes += 1;
+      game.timeLeft = Math.max(0, game.timeLeft - 4);
+      setMessage("Kuechenpanne", `${reason}. Vier Sekunden weg, aber der Koch bleibt dran.`, "bad");
+      if (game.mistakes >= 3) {
+        endGame(false, "Zu viele Pannen", "Die Mayo hat gewonnen. Inakzeptabel. Neue Runde, neue Haltung.");
+      }
+    }
+
+    function endGame(won, title, text) {
+      game.running = false;
+      game.finished = true;
+      setMessage(title, text, won ? "win" : "bad");
+      updateHud();
+    }
+
+    function draw(now) {
+      drawKitchen();
+      drawPot(now);
+      game.items.forEach((item) => { if (!item.taken) drawItem(item, now); });
+      game.hazards.forEach((hazard, index) => drawHazard(hazard, now + index * 200));
+      drawPlayer(now);
+      if (game.stepIndex >= currentRecipe().steps.length && game.running) drawPotArrow(now);
+    }
+
+    function drawKitchen() {
+      ctx.clearRect(0, 0, world.w, world.h);
+      ctx.fillStyle = "#d7b98d";
+      ctx.fillRect(0, 0, world.w, world.h);
+      ctx.fillStyle = "rgba(255, 247, 227, 0.46)";
+      for (let x = 0; x < world.w; x += 80) {
+        for (let y = 0; y < world.h; y += 80) {
+          ctx.fillRect(x + 2, y + 2, 76, 76);
+        }
+      }
+      drawCounter(36, 34, 230, 58, "Vorrat");
+      drawCounter(306, 34, 180, 58, "Schneidebrett");
+      drawCounter(36, 520, 250, 46, "Servicetisch");
+      drawCounter(512, 520, 240, 46, "Pasta-Parkplatz");
+      ctx.strokeStyle = "rgba(54, 40, 28, 0.2)";
+      ctx.lineWidth = 10;
+      ctx.strokeRect(14, 14, world.w - 28, world.h - 28);
+    }
+
+    function drawCounter(x, y, w, h, label) {
+      ctx.fillStyle = "#8f6b49";
+      roundRect(x, y, w, h, 8);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.22)";
+      roundRect(x + 10, y + 8, w - 20, 12, 6);
+      ctx.fill();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.82)";
+      ctx.font = "700 14px Segoe UI, sans-serif";
+      ctx.fillText(label, x + 14, y + h - 16);
+    }
+
+    function drawPot(now) {
+      const pot = game.pot;
+      ctx.save();
+      ctx.translate(pot.x, pot.y);
+      ctx.fillStyle = "#272727";
+      ctx.beginPath();
+      ctx.ellipse(0, 8, 48, 30, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#3d3d3d";
+      ctx.fillRect(-40, -4, 80, 28);
+      ctx.fillStyle = "#f8d57b";
+      ctx.beginPath();
+      ctx.ellipse(0, -4, 37, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.75)";
+      ctx.lineWidth = 4;
+      for (let i = -1; i <= 1; i += 1) {
+        ctx.beginPath();
+        ctx.arc(i * 18, -34 - Math.sin(now / 320 + i) * 4, 12, Math.PI * 0.82, Math.PI * 1.35);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawItem(item, now) {
+      const data = kitchenItems[item.id];
+      const needed = currentRecipe().steps[game.stepIndex] === item.id;
+      const bob = Math.sin(now / 240 + item.pulse) * 4;
+      ctx.save();
+      ctx.translate(item.x, item.y + bob);
+      if (needed) {
+        ctx.strokeStyle = "rgba(243, 182, 63, 0.8)";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(0, 0, item.r + 8, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.fillStyle = data.color;
+      ctx.strokeStyle = "rgba(34, 31, 32, 0.38)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, item.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = item.id === "rahm" || item.id === "kaese" || item.id === "mayo" ? "#262222" : "#fffaf0";
+      ctx.font = "800 17px Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(data.icon, 0, 1);
+      ctx.restore();
+    }
+
+    function drawHazard(hazard, now) {
+      ctx.save();
+      ctx.translate(hazard.x, hazard.y);
+      ctx.rotate(Math.sin(now / 450) * 0.18);
+      ctx.fillStyle = "rgba(255, 255, 255, 0.86)";
+      ctx.strokeStyle = "rgba(88, 75, 64, 0.34)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(-14, 4, 18, 0, Math.PI * 2);
+      ctx.arc(4, -8, 24, 0, Math.PI * 2);
+      ctx.arc(22, 7, 17, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = "#d94f45";
+      ctx.font = "900 18px Segoe UI, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("!", 4, 10);
+      ctx.restore();
+    }
+
+    function drawPlayer(now) {
+      const p = game.player;
+      const flash = now < p.invincibleUntil && Math.floor(now / 90) % 2 === 0;
+      if (flash) return;
+      const bob = Math.sin(p.wobble) * 2;
+      ctx.save();
+      ctx.translate(p.x, p.y + bob);
+      ctx.strokeStyle = "#221f20";
+      ctx.lineWidth = 5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(-11, 15); ctx.lineTo(-18, 31);
+      ctx.moveTo(11, 15); ctx.lineTo(18, 31);
+      ctx.moveTo(-15, -1); ctx.lineTo(-30, 10);
+      ctx.moveTo(15, -1); ctx.lineTo(30, 10);
+      ctx.stroke();
+      ctx.fillStyle = "#497fc4";
+      roundRect(-16, -10, 32, 34, 10); ctx.fill();
+      ctx.fillStyle = "#fffaf0";
+      roundRect(-18, -13, 36, 10, 5); ctx.fill();
+      ctx.fillStyle = "#ffd6a5";
+      ctx.beginPath(); ctx.arc(0, -29, 16, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#221f20";
+      ctx.beginPath(); ctx.arc(-5, -31, 2.2, 0, Math.PI * 2); ctx.arc(6, -31, 2.2, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#221f20";
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(1, -26, 6, 0.1, Math.PI - 0.1); ctx.stroke();
+      ctx.fillStyle = "#fff";
+      ctx.beginPath();
+      ctx.ellipse(0, -47, 21, 11, 0, 0, Math.PI * 2);
+      ctx.ellipse(-10, -54, 12, 10, 0, 0, Math.PI * 2);
+      ctx.ellipse(8, -57, 14, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(34,31,32,0.2)";
+      ctx.stroke();
+      drawBasket();
+      ctx.restore();
+    }
+
+    function drawBasket() {
+      ctx.fillStyle = "#9b6a3f";
+      roundRect(18, 4, 26, 18, 5); ctx.fill();
+      ctx.strokeStyle = "#6f4729";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(31, 6, 12, Math.PI, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    function drawPotArrow(now) {
+      const y = game.pot.y + 72 + Math.sin(now / 220) * 6;
+      ctx.fillStyle = "rgba(217, 79, 69, 0.9)";
+      ctx.beginPath();
+      ctx.moveTo(game.pot.x, y);
+      ctx.lineTo(game.pot.x - 18, y + 28);
+      ctx.lineTo(game.pot.x + 18, y + 28);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function renderRecipe() {
+      const recipe = currentRecipe();
+      recipeList.innerHTML = "";
+      recipe.steps.forEach((id, index) => {
+        const row = document.createElement("div");
+        row.className = "recipe-step";
+        if (index < game.stepIndex) row.classList.add("done");
+        if (index === game.stepIndex) row.classList.add("current");
+        row.innerHTML = `<span>${index < game.stepIndex ? "OK" : index + 1}</span><span>${kitchenItems[id].label}</span>`;
+        recipeList.append(row);
+      });
+      recipeHelp.textContent = game.stepIndex >= recipe.steps.length ? "Alles im Korb. Jetzt zum Topf." : `Jetzt dran: ${kitchenItems[recipe.steps[game.stepIndex]].label}`;
+    }
+
+    function updateHud() {
+      const recipe = currentRecipe();
+      dishText.textContent = recipe.name;
+      timeText.textContent = Math.ceil(game.timeLeft).toString();
+      mistakesText.textContent = `${game.mistakes} / 3`;
+      renderRecipe();
+    }
+
+    function setMessage(title, text, tone) {
+      message.className = `panel message ${tone}`;
+      message.querySelector("h2").textContent = title;
+      message.querySelector("p").textContent = text;
+    }
+
+    function unique(values) {
+      return values.filter((value, index) => values.indexOf(value) === index);
+    }
+
+    function shuffle(values) {
+      const result = [...values];
+      for (let index = result.length - 1; index > 0; index -= 1) {
+        const swap = Math.floor(Math.random() * (index + 1));
+        [result[index], result[swap]] = [result[swap], result[index]];
+      }
+      return result;
+    }
+
+    function roundRect(x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function distance(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+    function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+
+    window.addEventListener("keydown", (event) => {
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "a", "d", "w", "s"].includes(event.key)) {
+        event.preventDefault();
+        keys.add(event.key);
+      }
+    });
+
+    window.addEventListener("keyup", (event) => keys.delete(event.key));
+
+    padButtons.forEach((button) => {
+      const dir = button.dataset.dir;
+      const map = { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight" };
+      button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        button.setPointerCapture(event.pointerId);
+        keys.add(map[dir]);
+      });
+      button.addEventListener("pointerup", () => keys.delete(map[dir]));
+      button.addEventListener("pointercancel", () => keys.delete(map[dir]));
+      button.addEventListener("pointerleave", () => keys.delete(map[dir]));
+    });
+
+    restartButton.addEventListener("click", newGame);
+    newGame();
+  </script>
+</body>
+</html>
+
+
+
+
+

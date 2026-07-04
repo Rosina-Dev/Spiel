@@ -331,6 +331,23 @@
       font-weight: 800;
     }
 
+    .start-actions {
+      margin-top: 22px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .start-actions .primary-button {
+      margin-top: 0;
+    }
+
+    .adventure-link {
+      display: inline-grid;
+      place-items: center;
+      text-decoration: none;
+    }
     .primary-button:hover,
     .secondary-button:hover,
     .dish-button:hover {
@@ -643,7 +660,10 @@
             <div><strong>2.</strong> Drücke erst dann auf „Service starten“, wenn du bereit bist.</div>
             <div><strong>3.</strong> Wähle aus 8 gemischten Feldern die richtigen Gerichte. Die Küchenfallen sehen absichtlich harmlos aus.</div>
           </div>
-          <button id="start-button" class="primary-button" type="button">Anleitung verstanden</button>
+          <div class="start-actions">
+            <button id="start-button" class="primary-button" type="button">Anleitung verstanden</button>
+            <a class="secondary-button adventure-link" href="maennli-abenteuer.html">Kuechenlauf spielen</a>
+          </div>
         </div>
       </div>
     </section>
@@ -948,6 +968,10 @@
   </script>
 </body>
 </html>
+
+
+
+
 
 
 
