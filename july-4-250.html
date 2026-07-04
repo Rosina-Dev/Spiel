@@ -114,16 +114,16 @@
     canvas { display: block; width: 100%; height: 100%; touch-action: none; }
     .zone-grid { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
     .zone-button {
-      position: absolute; display: grid; place-items: center; width: clamp(108px, 32vw, 154px); min-height: 62px;
+      position: absolute; display: grid; place-items: center; width: clamp(76px, 22vw, 108px); min-height: 44px;
       border-radius: 8px; color: #fff; font-weight: 950; text-transform: uppercase;
       box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 8px 16px rgba(7,26,73,.2); pointer-events: auto;
     }
-    .zone-button strong { display: block; font-size: clamp(1.25rem, 5.6vw, 1.85rem); line-height: 1; }
+    .zone-button strong { display: block; font-size: clamp(.86rem, 3.8vw, 1.22rem); line-height: 1; }
     .zone-button span { display: none; }
-    .zone-button.sky { top: 10px; left: 50%; transform: translateX(-50%); }
-    .zone-button.grill { left: 10px; top: 50%; transform: translateY(-50%); }
-    .zone-button.cooler { right: 10px; top: 50%; transform: translateY(-50%); }
-    .zone-button.bin { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .zone-button.sky { top: 8px; left: 50%; transform: translateX(-50%); }
+    .zone-button.grill { left: 8px; top: 50%; transform: translateY(-50%); }
+    .zone-button.cooler { right: 8px; top: 50%; transform: translateY(-50%); }
+    .zone-button.bin { bottom: 8px; left: 50%; transform: translateX(-50%); }
     .zone-button.sky:active { transform: translateX(-50%) translateY(2px); }
     .zone-button.grill:active, .zone-button.cooler:active { transform: translateY(calc(-50% + 2px)); }
     .zone-button.bin:active { transform: translateX(-50%) translateY(2px); }
@@ -149,8 +149,7 @@
       .tagline, .small-note { font-size: .94rem; }
       .start-rules { margin-top: 11px; padding: 10px; }
       .rule-line { margin-top: 6px; font-size: .82rem; }
-      .zone-button { min-height: 58px; }
-      .zone-button span { margin-top: 3px; font-size: .58rem; }
+      .zone-button { width: clamp(68px, 21vw, 96px); min-height: 40px; }
     }
   </style>
 </head>
