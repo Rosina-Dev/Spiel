@@ -236,21 +236,24 @@
         }
         audioCtx = new Context();
         masterGain = audioCtx.createGain();
-        masterGain.gain.value = 0.24;
+        masterGain.gain.value = 0.42;
         masterGain.connect(audioCtx.destination);
         startMusic();
       }
 
-      function tone(freq, start, dur, type = "sine", gain = 0.07) {
+      function tone(freq, start, dur, type = "sine", gain = 0.09) {
         if (!audioCtx || !musicOn) return;
         const osc = audioCtx.createOscillator();
         const g = audioCtx.createGain();
         osc.type = type;
         osc.frequency.setValueAtTime(freq, start);
-        g.gain.setValueAtTime(0, start);
+        g.gain.setValueAtTime(0.001, start);
         g.gain.linearRampToValueAtTime(gain, start + 0.012);
         g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-        osc.connect(g); g.connect(masterGain); osc.start(start); osc.stop(start + dur + 0.03);
+        osc.connect(g);
+        g.connect(masterGain);
+        osc.start(start);
+        osc.stop(start + dur + 0.04);
       }
 
       function kick(start) {
@@ -258,12 +261,15 @@
         const osc = audioCtx.createOscillator();
         const g = audioCtx.createGain();
         osc.type = "sine";
-        osc.frequency.setValueAtTime(120, start);
-        osc.frequency.exponentialRampToValueAtTime(42, start + 0.18);
+        osc.frequency.setValueAtTime(148, start);
+        osc.frequency.exponentialRampToValueAtTime(38, start + 0.22);
         g.gain.setValueAtTime(0.001, start);
-        g.gain.linearRampToValueAtTime(0.42, start + 0.01);
-        g.gain.exponentialRampToValueAtTime(0.001, start + 0.34);
-        osc.connect(g); g.connect(masterGain); osc.start(start); osc.stop(start + 0.38);
+        g.gain.linearRampToValueAtTime(0.7, start + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.001, start + 0.42);
+        osc.connect(g);
+        g.connect(masterGain);
+        osc.start(start);
+        osc.stop(start + 0.46);
       }
 
       function noiseHit(start, dur, gain, type = "highpass", freq = 1800) {
@@ -279,62 +285,83 @@
         g.gain.setValueAtTime(gain, start);
         g.gain.exponentialRampToValueAtTime(0.001, start + dur);
         src.buffer = buffer;
-        src.connect(filter); filter.connect(g); g.connect(masterGain); src.start(start);
+        src.connect(filter);
+        filter.connect(g);
+        g.connect(masterGain);
+        src.start(start);
       }
 
       function snare(start) {
-        noiseHit(start, 0.18, 0.18, "bandpass", 1700);
-        tone(185, start, 0.12, "triangle", 0.055);
+        noiseHit(start, 0.21, 0.32, "bandpass", 1650);
+        noiseHit(start + 0.018, 0.12, 0.12, "highpass", 4200);
+        tone(174, start, 0.13, "triangle", 0.09);
       }
 
       function hat(start, open = false) {
-        noiseHit(start, open ? 0.16 : 0.045, open ? 0.055 : 0.038, "highpass", 5200);
+        noiseHit(start, open ? 0.18 : 0.045, open ? 0.095 : 0.055, "highpass", 5600);
       }
 
-      function bass(freq, start, dur) {
+      function bass(freq, start, dur, slideTo = null) {
         if (!audioCtx || !musicOn) return;
         const osc = audioCtx.createOscillator();
         const g = audioCtx.createGain();
         const filter = audioCtx.createBiquadFilter();
         osc.type = "sawtooth";
         osc.frequency.setValueAtTime(freq, start);
+        if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, start + dur * 0.72);
         filter.type = "lowpass";
-        filter.frequency.setValueAtTime(180, start);
+        filter.frequency.setValueAtTime(210, start);
         g.gain.setValueAtTime(0.001, start);
-        g.gain.linearRampToValueAtTime(0.11, start + 0.018);
+        g.gain.linearRampToValueAtTime(0.22, start + 0.02);
         g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-        osc.connect(filter); filter.connect(g); g.connect(masterGain); osc.start(start); osc.stop(start + dur + 0.04);
+        osc.connect(filter);
+        filter.connect(g);
+        g.connect(masterGain);
+        osc.start(start);
+        osc.stop(start + dur + 0.05);
       }
 
-      function chord(freqs, start, dur, gain = 0.018) {
-        freqs.forEach((freq, index) => tone(freq, start + index * 0.006, dur, "sawtooth", gain));
+      function pad(freqs, start, dur) {
+        freqs.forEach((freq, index) => {
+          tone(freq, start + index * 0.008, dur, "sawtooth", 0.032);
+          tone(freq * 2, start + index * 0.01, dur * 0.72, "triangle", 0.012);
+        });
       }
 
-      function hook(freq, start, dur = 0.12) {
-        tone(freq, start, dur, "square", 0.032);
-        tone(freq * 2, start + 0.01, dur * 0.62, "triangle", 0.012);
+      function hook(freq, start, dur = 0.16) {
+        tone(freq, start, dur, "square", 0.055);
+        tone(freq * 1.5, start + 0.012, dur * 0.54, "triangle", 0.018);
+      }
+
+      function synthChop(start, base = 293.66) {
+        [0, 0.07, 0.14].forEach((offset, i) => {
+          tone(base * [1, 1.122, 0.84][i], start + offset, 0.055, "square", 0.044);
+        });
       }
 
       function startMusic() {
         clearInterval(musicTimer);
         if (!audioCtx) return;
-        const step = 60 / 94 / 2;
-        const bassLine = [55, 55, 65.41, 55, 73.42, 65.41, 61.74, 49];
-        const hooks = [293.66, 329.63, 392, 329.63, 246.94, 293.66, 220, 246.94];
+        const step = 60 / 88 / 2;
+        const bassLine = [49, 49, 61.74, 49, 73.42, 65.41, 61.74, 41.2];
+        const hookLine = [293.66, 329.63, 392, 329.63, 246.94, 293.66, 220, 246.94];
         function bar() {
           if (!musicOn || !audioCtx) return;
           const t = audioCtx.currentTime + 0.04;
-          chord([146.83, 220, 293.66], t, step * 3.6, 0.013);
-          chord([130.81, 196, 261.63], t + step * 8, step * 3.6, 0.012);
+          pad([146.83, 220, 293.66], t, step * 7.6);
+          pad([130.81, 196, 261.63], t + step * 8, step * 7.2);
+          synthChop(t + step * 1.5, 293.66);
+          synthChop(t + step * 9.5, 246.94);
           for (let i = 0; i < 16; i += 1) {
             const at = t + i * step;
-            if ([0, 3, 6, 10, 14].includes(i)) kick(at);
+            if ([0, 3, 6, 8, 10, 14].includes(i)) kick(at);
             if ([4, 12].includes(i)) snare(at);
             if (i % 2 === 0) hat(at, i === 15);
-            if ([1, 2, 7, 9, 11, 13].includes(i)) hat(at + step * 0.52, false);
-            if (i % 2 === 0 || i === 3 || i === 11) bass(bassLine[i % bassLine.length], at, step * 0.9);
+            if ([1, 2, 5, 7, 9, 11, 13, 15].includes(i)) hat(at + step * 0.52, false);
+            if ([0, 2, 3, 6, 8, 10, 11, 14].includes(i)) bass(bassLine[i % bassLine.length], at, step * 0.92, i === 11 ? 49 : null);
           }
-          [2, 3, 5, 7, 10, 13, 14].forEach((slot, i) => hook(hooks[i], t + step * slot, i % 2 ? 0.1 : 0.14));
+          [2, 3, 5, 7, 10, 12, 13, 14].forEach((slot, i) => hook(hookLine[i], t + step * slot, i % 2 ? 0.12 : 0.18));
+          noiseHit(t + step * 15.5, 0.22, 0.08, "highpass", 3600);
         }
         bar();
         musicTimer = setInterval(bar, step * 16 * 1000);
@@ -344,7 +371,7 @@
         musicOn = on;
         soundButton.textContent = musicOn ? "Music On" : "Music Off";
         soundButton.setAttribute("aria-pressed", String(musicOn));
-        if (masterGain) masterGain.gain.setTargetAtTime(musicOn ? 0.24 : 0, audioCtx.currentTime, 0.03);
+        if (masterGain) masterGain.gain.setTargetAtTime(musicOn ? 0.42 : 0, audioCtx.currentTime, 0.03);
         if (musicOn && audioCtx) startMusic();
       }
 
