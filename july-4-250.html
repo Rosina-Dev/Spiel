@@ -103,7 +103,7 @@
     .primary { width: min(360px, 100%); min-height: 58px; margin-top: 18px; border-radius: 8px; color: #fff; background: linear-gradient(135deg, var(--red), #b80f2a); box-shadow: 0 12px 24px rgba(232, 34, 61, .28); font-weight: 950; text-transform: uppercase; }
     .primary:active, .zone-button:active, .sound-button:active { transform: translateY(2px); }
 
-    .game-shell { min-height: calc(100svh - 24px); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 9px; padding: 10px; background: rgba(255,255,255,.94); }
+    .game-shell { min-height: calc(100svh - 24px); display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 9px; padding: 10px; background: rgba(255,255,255,.94); }
     .hud { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-right: 92px; }
     .stat { min-height: 54px; border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px; background: #fff; box-shadow: 0 8px 18px rgba(7,26,73,.08); }
     .label { display: block; color: var(--muted); font-size: .68rem; font-weight: 950; text-transform: uppercase; }
@@ -112,10 +112,21 @@
 
     .arena { position: relative; min-height: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: linear-gradient(180deg, #071a49, #113a90); box-shadow: inset 0 0 0 1px rgba(255,255,255,.16); }
     canvas { display: block; width: 100%; height: 100%; touch-action: none; }
-    .zone-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-    .zone-button { min-height: 72px; border-radius: 8px; color: #fff; font-weight: 950; text-transform: uppercase; box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 8px 16px rgba(7,26,73,.12); }
-    .zone-button strong { display: block; font-size: clamp(1rem, 4.4vw, 1.2rem); line-height: 1; }
-    .zone-button span { display: block; margin-top: 5px; padding: 0 4px; font-size: clamp(.62rem, 2.8vw, .78rem); line-height: 1.12; opacity: .92; text-transform: none; }
+    .zone-grid { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+    .zone-button {
+      position: absolute; display: grid; place-items: center; width: clamp(108px, 32vw, 154px); min-height: 62px;
+      border-radius: 8px; color: #fff; font-weight: 950; text-transform: uppercase;
+      box-shadow: inset 0 -5px 0 rgba(0,0,0,.18), 0 8px 16px rgba(7,26,73,.2); pointer-events: auto;
+    }
+    .zone-button strong { display: block; font-size: clamp(1.25rem, 5.6vw, 1.85rem); line-height: 1; }
+    .zone-button span { display: none; }
+    .zone-button.sky { top: 10px; left: 50%; transform: translateX(-50%); }
+    .zone-button.grill { left: 10px; top: 50%; transform: translateY(-50%); }
+    .zone-button.cooler { right: 10px; top: 50%; transform: translateY(-50%); }
+    .zone-button.bin { bottom: 10px; left: 50%; transform: translateX(-50%); }
+    .zone-button.sky:active { transform: translateX(-50%) translateY(2px); }
+    .zone-button.grill:active, .zone-button.cooler:active { transform: translateY(calc(-50% + 2px)); }
+    .zone-button.bin:active { transform: translateX(-50%) translateY(2px); }
     .sky { background: linear-gradient(135deg, #1557d4, #071a49); }
     .grill { background: linear-gradient(135deg, #e8223d, #8e1021); }
     .cooler { background: linear-gradient(135deg, #24a8ff, #1557d4); }
@@ -129,7 +140,6 @@
       .copy { display: grid; align-content: center; padding: 34px; }
       .game-shell { min-height: min(820px, calc(100vh - 36px)); grid-template-columns: minmax(0, 1fr) 260px; grid-template-rows: auto minmax(0, 1fr); }
       .hud { grid-column: 1 / -1; }
-      .zone-grid { grid-template-columns: 1fr; grid-template-rows: repeat(4, minmax(92px, 1fr)); }
     }
 
     @media (max-height: 690px) {
@@ -166,12 +176,14 @@
           <div class="stat"><span class="label">Time</span><span class="value" id="timeValue">20</span></div>
           <div class="stat"><span class="label">Score</span><span class="value" id="scoreValue">0</span></div>
         </div>
-        <div class="arena" id="arena"><canvas id="gameCanvas" width="720" height="860" aria-label="Swipe battle area"></canvas></div>
-        <div class="zone-grid">
-          <button class="zone-button sky" data-zone="sky" type="button"><strong>Sky</strong><span>Firework</span></button>
-          <button class="zone-button grill" data-zone="grill" type="button"><strong>Grill</strong><span>Burger Hotdog Corn</span></button>
-          <button class="zone-button cooler" data-zone="cooler" type="button"><strong>Cooler</strong><span>Soda Lemonade</span></button>
-          <button class="zone-button bin" data-zone="bin" type="button"><strong>Bin</strong><span>Trash Burnt Wrong</span></button>
+        <div class="arena" id="arena">
+          <canvas id="gameCanvas" width="720" height="860" aria-label="Swipe battle area"></canvas>
+          <div class="zone-grid">
+            <button class="zone-button sky" data-zone="sky" type="button"><strong>Sky</strong><span>Firework</span></button>
+            <button class="zone-button grill" data-zone="grill" type="button"><strong>Grill</strong><span>Burger Hotdog Corn</span></button>
+            <button class="zone-button cooler" data-zone="cooler" type="button"><strong>Cooler</strong><span>Soda Lemonade</span></button>
+            <button class="zone-button bin" data-zone="bin" type="button"><strong>Bin</strong><span>Trash Burnt Wrong</span></button>
+          </div>
         </div>
       </div>
     </section>
@@ -541,18 +553,8 @@
         ctx.fillStyle = "rgba(7,26,73,.88)";
         ctx.fillRect(0, 0, W, H);
 
-        const zones = [
-          ["SKY", W / 2, 62],
-          ["GRILL", 96, H / 2 + 10],
-          ["COOLER", W - 100, H / 2 + 10],
-          ["BIN", W / 2, H - 62]
-        ];
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "950 34px Segoe UI, sans-serif";
-        zones.forEach(([label, x, y]) => ctx.fillText(label, x, y));
         ctx.globalAlpha = 1;
+
       }
 
       function roundedRect(x, y, w, h, r) {
@@ -668,24 +670,12 @@
         ctx.globalAlpha = 1;
       }
 
-      function drawMessage() {
-        ctx.fillStyle = "rgba(255,255,255,.94)";
-        roundedRect(34, H - 138, W - 68, 52, 12);
-        ctx.fill();
-        ctx.fillStyle = state.messageTone;
-        ctx.fillStyle = state.messageTone === "#ffffff" ? "#071a49" : state.messageTone;
-        ctx.font = "900 24px Segoe UI, sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(state.message, W / 2, H - 112);
-      }
 
 
       function render() {
         drawBackground();
         drawItem();
         drawParticles();
-        drawMessage();
       }
 
       function loop(now) {
